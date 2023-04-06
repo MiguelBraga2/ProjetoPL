@@ -2,30 +2,55 @@ import ply.lex as lex
 
 # Define the tokens for PugJS
 tokens = (
-    'TAG',
     'ID',
-    'CLASS',
+    'TAG',
+    'DOT',
     'TEXT',
-    'COMMENT',
+    'CLASS',
+    'COMMA',
     'EQUALS',
     'STRING',
     'INDENT',
-    'DEDENT'
+    'DEDENT',
+    'LPAREN',
+    'RPAREN',
+    'COMMENT',
+    'ATTRIBUTE'
+)
+
+#'DOCTYPE',
+#'IF',
+#'ELSE',
+#'FOR',
+#'EACH',
+#'IN',
+#'BLOCK'
+
+states = (
+    ('block', 'exclusive'),
 )
 
 # Palavras reservadas e simbolos terminais '(' ')' '.' e atributos
 
 # Define regular expressions for each token
 t_TAG = r'[a-z][a-z0-9]*'
-t_CLASS = r'\.\w+'
-t_EQUALS = r'='
+t_RPAREN = r'\)'
+t_LPAREN = r'\('
+t_COMMA = r','
 t_STRING = r'\'[^\']*\'|"[^"]*"'
 t_ignore_COMMENT = r'\/\/-.*'
 t_ignore = '\t\r'
 
 
+# Define a rule for the attributes
+def t_ATTRIBUTE(t):
+    r'\(\s*\w+\s*=\s*(\'[^\']*\'|"[^"]*")(\s*,?\s*\w+\s*=\s*(\'[^\']*\'|"[^"]*"))*\s*\)'
+    t.value = t.value.replace(',','')
+    t.value = t.value.replace('\'','"')
+    return t
+
 # Define a rule for the indentation
-def t_indentation(t):
+def t_INITIAL_indentation(t):
     r'\n[ \t]*'
     t.lexer.lineno += 1
     indent_level = len(t.value) -1
@@ -47,14 +72,47 @@ def t_indentation(t):
         t.type = 'INDENT'
         return t
 
+
 def t_ID(t):
     r'\#\w+'
+    return t
+
+def t_CLASS(t):
+    r'\.\w+'
+    return t
+
+def t_DOT(t):
+    r'\.'
+    t.lexer.begin('block')
+    return t
+
+def t_EQUALS(t): 
+    r'='
     return t
 
 # Define a rule for the TEXT token
 def t_TEXT(t):
     r'(?<!\s)s*.+'
     t.value = t.value.strip()
+    return t
+
+# Define a rule for the indentation in the block state
+def t_block_indentation(t):
+    r'\n[ \t]*'
+    t.lexer.lineno += 1
+    indent_level = len(t.value) -1
+    if t.lexer.indent_stack[-1] > indent_level:
+        while t.lexer.indent_stack[-1] > indent_level:
+            t.lexer.indent_stack.pop()
+        t.lexer.begin('INITIAL')
+        t.type = 'DEDENT'
+        return t
+    else:
+        pass
+        
+
+def t_block_TEXT(t):
+    r'.+'
     return t
 
 # Define an error handling function
@@ -68,10 +126,21 @@ lexer.indent_stack = [0]
 
 # Test the lexer
 data = '''
-ul
-  li OLAAAAAAA
-  li manos
-  li xau
+html(lang="en")
+  head
+    title= pageTitle
+      script(type='text/javascript').
+        if (foo) bar(1 + 5)
+  body
+    h1 Pug - node template engine
+      #container.col
+        if youAreUsingPug
+          p You are amazing
+        else
+          p Get on it!
+        p.
+          Pug is a terse and simple templating language with a
+          strong focus on performance and powerful features
 '''
 
 lexer.input(data)
