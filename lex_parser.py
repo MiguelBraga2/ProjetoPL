@@ -3,19 +3,20 @@ import ply.lex as lex
 # Define the tokens for PugJS
 tokens = (
     'IF',
-    'ELSE',
-    'FOR',
-    'EACH',
     'IN',
     'ID',
+    'FOR',
     'TAG',
     'DOT',
+    'ELSE',
+    'EACH',
     'TEXT',
     'CLASS',
     'EQUALS',
     'STRING',
     'INDENT',
     'DEDENT',
+    'DOCTYPE',
     'COMMENT',
     'ATTRIBUTE',
     'IGNORECOMMENT',
@@ -34,7 +35,7 @@ states = (
 # Define regular expressions for each token
 t_TAG = r'[a-z][a-z0-9]*'
 t_STRING = r'\'[^\']*\'|"[^"]*"'
-t_ignore = '\t\r'
+t_ANY_ignore = '\t\r'
 
 
 # Define a rule for the attributes
@@ -80,6 +81,10 @@ def t_COMMENT(t):
 
 def t_INTERPOLATION(t):
     r'\#\{\w+\}'
+    return t
+
+def t_DOCTYPE(t):
+    r'doctype'
     return t
 
 def t_ID(t):
@@ -147,7 +152,7 @@ def t_comment_TEXT(t):
     r'.+'
 
 # Define an error handling function
-def t_error(t):
+def t_ANY_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
@@ -157,6 +162,9 @@ lexer.indent_stack = [0]
 
 # Test the lexer
 data = '''
+
+doctype html
+
 html(lang="en")
   head
     title= pageTitle
