@@ -7,18 +7,18 @@ tokens = (
     'DOT',
     'TEXT',
     'CLASS',
-    'COMMA',
     'EQUALS',
     'STRING',
     'INDENT',
     'DEDENT',
-    'LPAREN',
-    'RPAREN',
     'COMMENT',
-    'ATTRIBUTE'
+    'ATTRIBUTE',
+    'IGNORECOMMENT',
+    'INTERPOLATION'
 )
 
 #'DOCTYPE',
+# COMMA, RPAREN, LPAREN?
 #'IF',
 #'ELSE',
 #'FOR',
@@ -28,17 +28,14 @@ tokens = (
 
 states = (
     ('block', 'exclusive'),
+    ('comment', 'exclusive')
 )
 
 # Palavras reservadas e simbolos terminais '(' ')' '.' e atributos
 
 # Define regular expressions for each token
 t_TAG = r'[a-z][a-z0-9]*'
-t_RPAREN = r'\)'
-t_LPAREN = r'\('
-t_COMMA = r','
 t_STRING = r'\'[^\']*\'|"[^"]*"'
-t_ignore_COMMENT = r'\/\/-.*'
 t_ignore = '\t\r'
 
 
@@ -72,6 +69,20 @@ def t_INITIAL_indentation(t):
         t.type = 'INDENT'
         return t
 
+def t_IGNORECOMMENT(t):
+    r'//-.*'
+    if len(t.value) - 3 == 0: 
+        t.lexer.begin('comment')
+
+def t_COMMENT(t):
+    r'//.*'
+    if len(t.value) - 2 == 0: 
+        t.lexer.begin('block')
+    return t
+
+def t_INTERPOLATION(t):
+    r'\#\{\w+\}'
+    return t
 
 def t_ID(t):
     r'\#\w+'
@@ -92,28 +103,30 @@ def t_EQUALS(t):
 
 # Define a rule for the TEXT token
 def t_TEXT(t):
-    r'(?<!\s)s*.+'
+    r'(?<!\s)s*[^(\#\{)\n]+'
     t.value = t.value.strip()
     return t
 
 # Define a rule for the indentation in the block state
-def t_block_indentation(t):
+def t_comment_block_indentation(t):
     r'\n[ \t]*'
     t.lexer.lineno += 1
     indent_level = len(t.value) -1
-    if t.lexer.indent_stack[-1] > indent_level:
+    if t.lexer.indent_stack[-1] >= indent_level:
         while t.lexer.indent_stack[-1] > indent_level:
             t.lexer.indent_stack.pop()
         t.lexer.begin('INITIAL')
         t.type = 'DEDENT'
         return t
     else:
-        pass
-        
-
+        return
+    
 def t_block_TEXT(t):
     r'.+'
     return t
+
+def t_comment_TEXT(t):
+    r'.+'
 
 # Define an error handling function
 def t_error(t):
@@ -132,10 +145,16 @@ html(lang="en")
       script(type='text/javascript').
         if (foo) bar(1 + 5)
   body
+    //
+      isto é um comentário em bloco
+      para aparecer no html
+    //-
+      isto é um comentário em bloco
+      para não aparecer no html
     h1 Pug - node template engine
       #container.col
         if youAreUsingPug
-          p You are amazing
+          p You are #{amazing}
         else
           p Get on it!
         p.
