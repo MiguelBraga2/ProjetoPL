@@ -2,6 +2,11 @@ import ply.lex as lex
 
 # Define the tokens for PugJS
 tokens = (
+    'IF',
+    'ELSE',
+    'FOR',
+    'EACH',
+    'IN',
     'ID',
     'TAG',
     'DOT',
@@ -17,14 +22,7 @@ tokens = (
     'INTERPOLATION'
 )
 
-#'DOCTYPE',
 # COMMA, RPAREN, LPAREN?
-#'IF',
-#'ELSE',
-#'FOR',
-#'EACH',
-#'IN',
-#'BLOCK'
 
 states = (
     ('block', 'exclusive'),
@@ -99,6 +97,26 @@ def t_DOT(t):
 
 def t_EQUALS(t): 
     r'='
+    return t
+
+def t_IF(t):
+    r'if'
+    return t
+
+def t_ELSE(t):
+    r'else'
+    return t
+
+def t_FOR(t):
+    r'for'
+    return t
+
+def t_EACH(t):
+    r'each'
+    return t
+
+def t_IN(t):
+    r'in'
     return t
 
 # Define a rule for the TEXT token
