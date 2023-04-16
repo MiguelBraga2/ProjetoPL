@@ -69,8 +69,9 @@ def t_INITIAL_indentation(t):
     elif t.lexer.indent_stack[-1] == indent_level:
         return 
     elif t.lexer.indent_stack[-1] > indent_level:
-        while t.lexer.indent_stack[-1] > indent_level:
-            t.lexer.indent_stack.pop()
+        t.lexer.indent_stack.pop()
+        if t.lexer.indent_stack[-1] > indent_level:
+            t.lexer.skip(-indent_level-1)
         t.type = 'DEDENT'
         return t
     else:
@@ -213,7 +214,7 @@ def t_comment_indentation(t):
             return t
     
 # Define a rule for the indentation in the block state
-def t_block_indentation(t):
+def t_block_indentation(t): # Rever
     r'\n[ \t]*'
     t.lexer.lineno += 1
     indent_level = len(t.value) -1
@@ -236,8 +237,8 @@ def t_ignorecomment_indentation(t):
         if t.lexer.indent_stack[-1] == indent_level:
             return 
         else:
-            while t.lexer.indent_stack[-1] > indent_level:
-                t.lexer.indent_stack.pop()
+            if t.lexer.indent_stack[-1] > indent_level:
+                t.lexer.skip(-indent_level-1)
             t.type = 'DEDENT'
             return t
     else:
@@ -267,10 +268,7 @@ lexer.indent_stack = [0]
 data =  '''
 ul
   li OLAAAAAAA
-  li manos
-  li xau
     li ola
-  li atum
 ul
   li massa
 '''

@@ -27,21 +27,22 @@ def p_taglist(p):
             | TAG TEXT taglist
             |
     '''
+    indent = parser.indentation
 
     if len(p) > 7:
         p.parser.indentation = p[4]
-        p[0] = p[1] + '<' + p[2] + '>' + p[3] + p[4] + p[5] + p[6] + '</' + p[2] + '>' + p.parser.indentation + p[7]
+        p[0] = p[1] + '<' + p[2] + '>' + p[3] + p[4] + p[5] + indent + '</' + p[2] + '>' + p[6] + p[7]
         p.parser.indentation = p[6]
     elif len(p) > 6:
         p.parser.indentation = p[3]
-        p[0] = '<' + p[1]  + '>' + p[2][1:] + p[3] + p[4] + p[5] + '</' + p[1] + '>' + p.parser.indentation + p[6]
+        p[0] = '<' + p[1]  + '>' + p[2][1:] + p[3] + p[4] + indent + '</' + p[1] + '>' + p[5] + p[6]
         p.parser.indentation = p[5]
     elif len(p) > 5:
         p.parser.indentation = p[2]
-        p[0] = '<' + p[1]  + '>' + p[2] + p[3] + p[4] + '</' + p[1] + '>' + p.parser.indentation + p[5]
+        p[0] = '<' + p[1]  + '>' + p[2] + p[3] + indent + '</' + p[1] + '>' + p[4] + p[5]
         p.parser.indentation = p[4]
     elif len(p) > 3:
-        p[0] =  '<' + p[1] + '>' + p[2][1:] + '</' + p[1] + '>' + p.parser.indentation + p[3]
+        p[0] =  '<' + p[1] + '>' + p[2][1:] + '</' + p[1] + '>' + indent + p[3]
     else:
         p[0] = ''
 
@@ -80,10 +81,7 @@ parser.indentation = ''
 data =  '''
 ul
   li OLAAAAAAA
-  li manos
-  li xau
     li ola
-  li atum
 ul
   li massa
 '''
