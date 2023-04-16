@@ -4,71 +4,88 @@ from lex_parser import tokens
 
 ## incio da GIC
 
-start = 'tagList'
+start = 'pug'
 
-'''
-tagList : tag aux1
-
-aux1 : tagList
-     |
-
-tag : TAG aux2
-
-aux2 : TEXT INDENT tagList DEDENT
-     | INDENT tagList DEDENT
-     | TEXT DEDENT
-     | DEDENT
-     |
-
-'''
-
-def p_tagList(p):
+def p_pug(p):
     '''
-    tagList : tag aux1
-    '''
-    p[0] = p[1] + p[2]
-    
-def p_aux1(p):
-    '''
-    aux1 : tagList
-         |
-    '''
-    if len(p) > 1:
-        p[0] = p[1]
-    else:
-        p[0] = ""
-
-def p_tag(p):
-    '''
-    tag : TAG aux2
-    '''
-    p[0] = "<" + p[1] + ">" + p[2] + "</" + p[1] + ">\n"
-
-def p_aux2(p):
-    '''
-    aux2 : TEXT INDENT tagList DEDENT
-         | INDENT tagList DEDENT
-         | TEXT
-         |
+    pug : comment DOCTYPE TEXT taglist
+        | DOCTYPE TEXT taglist
+        | taglist
     '''
     if len(p) > 4:
-        p[0] = p[1] + p[2] + p[3] + p[4]
+        p[0] = p[1] + '\n<!' + p[2] + ' ' + p[3] + '>\n' + p[4]
     elif len(p) > 3:
-        p[0] = p[1] + p[2] + p[3]  
-    elif len(p) > 1:
-        p[0] = p[1]
+        p[0] = '\n<!' + p[1] + ' ' + p[2] + '>\n' + p[3]
     else:
-        p[0] = ""
+        p[0] = p[1]    
+    
+def p_taglist(p):
+    '''
+    taglist : comment TAG TEXT INDENT taglist DEDENT taglist 
+            | TAG TEXT INDENT taglist DEDENT taglist 
+            | TAG INDENT taglist DEDENT taglist 
+            | TAG TEXT taglist
+            |
+    '''
+
+    if len(p) > 7:
+        p.parser.indentation = p[4]
+        p[0] = p[1] + '<' + p[2] + '>' + p[3] + p[4] + p[5] + p[6] + '</' + p[2] + '>' + p.parser.indentation + p[7]
+        p.parser.indentation = p[6]
+    elif len(p) > 6:
+        p.parser.indentation = p[3]
+        p[0] = '<' + p[1]  + '>' + p[2][1:] + p[3] + p[4] + p[5] + '</' + p[1] + '>' + p.parser.indentation + p[6]
+        p.parser.indentation = p[5]
+    elif len(p) > 5:
+        p.parser.indentation = p[2]
+        p[0] = '<' + p[1]  + '>' + p[2] + p[3] + p[4] + '</' + p[1] + '>' + p.parser.indentation + p[5]
+        p.parser.indentation = p[4]
+    elif len(p) > 3:
+        p[0] =  '<' + p[1] + '>' + p[2][1:] + '</' + p[1] + '>' + p.parser.indentation + p[3]
+    else:
+        p[0] = ''
+
+def p_comment(p):
+    '''
+    comment : COMMENT
+    '''
+    pass
+
+def p_tagparams(p):
+    '''
+    tagparams : CLASS ID ATTRIBUTE 
+        | CLASS ATTRIBUTE ID  
+        | ATTRIBUTE CLASS ID  
+        | ATTRIBUTE ID CLASS
+        | ID ATTRIBUTE CLASS  
+        | ID CLASS ATTRIBUTE
+        | CLASS ATTRIBUTE  
+        | ATTRIBUTE CLASS  
+        | ATTRIBUTE ID  
+        | ID ATTRIBUTE 
+        | CLASS ID  
+        | ID CLASS 
+    ''' 
+    if len(p) > 3:
+        pass
+    elif len(p) > 2:
+        pass
+
 
 
 ###inicio do parsing
-parser = yacc.yacc(start='tagList')
+parser = yacc.yacc(start='pug')
+parser.indentation = ''
 
 data =  '''
 ul
   li OLAAAAAAA
   li manos
   li xau
+    li ola
+  li atum
+ul
+  li massa
 '''
 
 r = parser.parse(data)

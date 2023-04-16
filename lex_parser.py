@@ -9,10 +9,21 @@ tokens = (
     'TAG',
     'DOT',
     'ELSE',
+    'WHEN',
+    'DEFAULT',
+    'DIGIT',
+    'COMMA',
+    'PARENL',
+    'PARENR',
+    'VARIABLE',
+    'UNLESS',
+    'BAR',
+    'CASE',
+    'MIXIN',
+    'WHILE',
     'EACH',
     'TEXT',
     'CLASS',
-    'EQUALS',
     'STRING',
     'INDENT',
     'DEDENT',
@@ -20,17 +31,17 @@ tokens = (
     'COMMENT',
     'ATTRIBUTE',
     'IGNORECOMMENT',
-    'INTERPOLATION'
+    'INTERPOLATION',
+    'WHITESPACES'
 )
 
-# COMMA, RPAREN, LPAREN?
 
 states = (
     ('block', 'exclusive'),
+    ('ignorecomment', 'exclusive'),
     ('comment', 'exclusive')
 )
 
-# Palavras reservadas e simbolos terminais '(' ')' '.' e atributos
 
 # Define regular expressions for each token
 t_TAG = r'[a-z][a-z0-9]*'
@@ -43,6 +54,7 @@ def t_ATTRIBUTE(t):
     r'\(\s*\w+\s*=\s*(\'[^\']*\'|"[^"]*")(\s*,?\s*\w+\s*=\s*(\'[^\']*\'|"[^"]*"))*\s*\)'
     t.value = t.value.replace(',','')
     t.value = t.value.replace('\'','"')
+    t.value = t.value[1:len(t.value)-1]
     return t
 
 # Define a rule for the indentation
@@ -54,8 +66,6 @@ def t_INITIAL_indentation(t):
         t.lexer.indent_stack.append(indent_level)
         t.type = 'INDENT'
         return t
-    elif t.lexer.indent_stack[-1] == 0 and indent_level == 0:
-        return
     elif t.lexer.indent_stack[-1] == indent_level:
         return 
     elif t.lexer.indent_stack[-1] > indent_level:
@@ -70,17 +80,16 @@ def t_INITIAL_indentation(t):
 
 def t_IGNORECOMMENT(t):
     r'//-.*'
-    if len(t.value) - 3 == 0: 
-        t.lexer.begin('comment')
+    t.lexer.begin('ignorecomment')
 
 def t_COMMENT(t):
     r'//.*'
-    if len(t.value) - 2 == 0: 
-        t.lexer.begin('block')
+    t.lexer.begin('comment')
     return t
 
 def t_INTERPOLATION(t):
-    r'\#\{\w+\}'
+    r'\#\{.*\}'
+    t.value = t.value[2:len(t.value)-1]
     return t
 
 def t_DOCTYPE(t):
@@ -89,10 +98,12 @@ def t_DOCTYPE(t):
 
 def t_ID(t):
     r'\#\w+'
+    t.value = t.value[1:]
     return t
 
 def t_CLASS(t):
     r'\.\w+'
+    t.value = t.value[1:]
     return t
 
 def t_DOT(t):
@@ -100,12 +111,12 @@ def t_DOT(t):
     t.lexer.begin('block')
     return t
 
-def t_EQUALS(t): 
-    r'='
+def t_MIXIN(t): 
+    r'mixin'
     return t
 
 def t_IF(t):
-    r'if'
+    r'(if|(?<=(else))\s+if)'
     return t
 
 def t_ELSE(t):
@@ -124,14 +135,85 @@ def t_IN(t):
     r'in'
     return t
 
-# Define a rule for the TEXT token
-def t_TEXT(t):
-    r'(?<!\s)s*[^(\#\{)\n]+'
+def t_UNLESS(t):
+    r'unless'
+    return t
+
+def t_WHEN(t):
+    r'when'
+    return t
+    
+def t_DEFAULT(t):
+    r'default'
+    return t
+
+def t_CASE(t):
+    r'case'
+    return t
+
+def t_WHILE(t):
+    r'while'
+    return t
+
+def t_BAR(t):
+    r'\/'
+    return t
+
+# Define a rule for the variable token
+def t_VARIABLE(t):
+    r'(\=\s+.+|(?<=(if))\s+[^\s]+|(?<=(else))\s+[^\s]+)'
+    t.value = t.value[1:]
     t.value = t.value.strip()
     return t
 
+# Define a rule for the TEXT token
+def t_TEXT(t):
+    r'((?<!\s)s*[^(\#\{)\n]+|<.*>)'
+    if t.value.isspace():
+        return
+    return t
+
+def t_DIGIT(t):
+    r'\d+'
+    return t
+
+def t_COMMA(t):
+    r'\,'
+    return t
+
+def t_PARENL(t):
+    r'\['
+    return t
+
+def t_PARENR(t):
+    r'\]'
+    return t
+
+# Define a rule for the indentation in the comment state
+def t_comment_indentation(t):
+    r'\n[ \t]*'
+    t.lexer.lineno += 1
+    indent_level = len(t.value) - 1
+    if t.lexer.indent_stack[-1] >= indent_level:
+        t.lexer.begin('INITIAL')
+        if t.lexer.indent_stack[-1] == indent_level:
+            return 
+        else:
+            while t.lexer.indent_stack[-1] > indent_level:
+                t.lexer.indent_stack.pop()
+            t.type = 'DEDENT'
+            return t
+    else:
+        white_spaces = indent_level - t.lexer.indent_stack[-1] - 1
+        aux = ''
+        for i in range(white_spaces):
+            aux += t.value[indent_level + i] 
+            t.type = 'WHITESPACES'
+            t.value = aux
+            return t
+    
 # Define a rule for the indentation in the block state
-def t_comment_block_indentation(t):
+def t_block_indentation(t):
     r'\n[ \t]*'
     t.lexer.lineno += 1
     indent_level = len(t.value) -1
@@ -143,12 +225,33 @@ def t_comment_block_indentation(t):
         return t
     else:
         return
-    
+
+# Define a rule for the indentation in the comment state
+def t_ignorecomment_indentation(t):
+    r'\n[ \t]*'
+    t.lexer.lineno += 1
+    indent_level = len(t.value) -1
+    if t.lexer.indent_stack[-1] >= indent_level:
+        t.lexer.begin('INITIAL')
+        if t.lexer.indent_stack[-1] == indent_level:
+            return 
+        else:
+            while t.lexer.indent_stack[-1] > indent_level:
+                t.lexer.indent_stack.pop()
+            t.type = 'DEDENT'
+            return t
+    else:
+        return
+
 def t_block_TEXT(t):
     r'.+'
     return t
 
 def t_comment_TEXT(t):
+    r'.+'
+    return t
+
+def t_ignorecomment_TEXT(t):
     r'.+'
 
 # Define an error handling function
@@ -161,31 +264,15 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 # Test the lexer
-data = '''
-
-doctype html
-
-html(lang="en")
-  head
-    title= pageTitle
-      script(type='text/javascript').
-        if (foo) bar(1 + 5)
-  body
-    //
-      isto é um comentário em bloco
-      para aparecer no html
-    //-
-      isto é um comentário em bloco
-      para não aparecer no html
-    h1 Pug - node template engine
-      #container.col
-        if youAreUsingPug
-          p You are #{amazing}
-        else
-          p Get on it!
-        p.
-          Pug is a terse and simple templating language with a
-          strong focus on performance and powerful features
+data =  '''
+ul
+  li OLAAAAAAA
+  li manos
+  li xau
+    li ola
+  li atum
+ul
+  li massa
 '''
 
 lexer.input(data)
