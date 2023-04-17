@@ -22,7 +22,7 @@ tokens = (
     'BAR',
     'BEGININTERP',
     'ENDINTERP',
-    # 'DOT',
+    'DOT',
     'TEXT',
     'COMMENT'
     # 'VAR',
@@ -46,10 +46,8 @@ states = (
     ('assign', 'exclusive'),
     ('attributes', 'exclusive'),
     ('interpolation', 'exclusive'),
-    ('comment', 'exclusive')
-
-
-    # ('block', 'exclusive')
+    ('comment', 'exclusive'),
+    ('block', 'exclusive')
 )
 
 
@@ -135,7 +133,44 @@ def t_comment_indentation(t):
     elif previous_indentation > current_indentation:
         t.lexer.begin('INITIAL')
         t.lexer.skip(-len(t.value))
-        return t
+        return 
+    else:
+        aux = current_indentation
+        nc = 0
+
+        for i in range(len(t.value)-1):
+            if t.value[-i-1] == '\t':
+                aux -= 4
+            else:
+                aux -= 1
+            
+            if aux == previous_indentation:
+                t.lexer.skip(-nc)
+                return
+            else:
+                nc += 1
+
+
+
+# Define a rule for the indentation in the block state
+def t_block_indentation(t): # Rever
+    r'\n[ \t]*'
+    
+     # increment the line number
+    t.lexer.lineno += 1
+
+    # get the indentation level
+    current_indentation = indetation_level(t.value[1:])
+
+    previous_indentation = t.lexer.indent_stack[-1]
+
+    if previous_indentation == current_indentation:
+        t.lexer.begin('INITIAL')
+        return 
+    elif previous_indentation > current_indentation:
+        t.lexer.begin('INITIAL')
+        t.lexer.skip(-len(t.value))
+        return 
     else:
         aux = current_indentation
         nc = 0
@@ -207,6 +242,7 @@ def t_BAR(t):
     r'\/'
     return t
 
+
 # Define a rule for the EQUALS symbol
 def t_EQUALS(t):
     r'\='
@@ -239,7 +275,7 @@ def t_assign_STRING(t):
 
 def t_BEGININTERP(t):
     r'\#\{'
-    t.lexer.begin('interpolation')
+    t.lexer.push_state('interpolation')
     return t
 
 
@@ -255,7 +291,7 @@ def t_interpolation_VARIABLE(t):
 
 def t_interpolation_ENDINTERP(t):
     r'\}'
-    t.lexer.begin('INITIAL')
+    t.lexer.pop_state()
     return t
 
 
@@ -285,6 +321,12 @@ def t_CLASS(t):
     return t
 
 
+def t_DOT(t):
+    r'\.'
+    t.lexer.begin('block')
+    return t
+    
+
 def t_TEXT(t):
     r'((?<!\s)[ \t]+[^(\#\{)\n]+|<.*>|(?<=})[ \t]*[^(\#\{)\n]+)'
     if t.value.isspace():
@@ -301,42 +343,15 @@ def t_ignorecomment_TEXT(t):
     r'.+'
 
 
+def t_block_TEXT(t):
+    r'[^(\#\{)\n]+'
+    return t
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-# def t_DOT(t):
-#     r'\.'# Define a rule for the unbuffered comments
-#     t.lexer.begin('block')
-#     return t
-    
-# # Define a rule for the indentation in the block state
-# def t_block_indentation(t): # Rever
-#     r'\n[ \t]*'
-#     t.lexer.lineno += 1
-#     indent_level = len(t.value) -1
-#     if t.lexer.indent_stack[-1] >= indent_level:
-#         while t.lexer.indent_stack[-1] > indent_level:
-#             t.lexer.indent_stack.pop()
-#         t.lexer.begin('INITIAL')
-#         t.type = 'DEDENT'
-#         return t
-#     else:
-#         return
-
-# def t_block_TEXT(t):
-#     r'.+'
-#     return t
+def t_block_BEGININTERP(t):
+    r'\#\{'
+    t.lexer.push_state('interpolation')
+    return t
 
 
 # Define an error handling function
@@ -378,7 +393,10 @@ ul
   li#ola.green(class='red')= msg       
     li ola #{msg} ola manos
 ul
-  li massa
+  li
+    p.
+        mano tudo bem 
+        #{msg}
 '''
 
 lexer.input(data)
