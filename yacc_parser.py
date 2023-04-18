@@ -31,18 +31,18 @@ def p_taglist(p):
 
     if len(p) > 7:
         p.parser.indentation = p[4]
-        p[0] = p[1] + '<' + p[2] + '>' + p[3] + p[4] + p[5] + indent + '</' + p[2] + '>' + p[6] + p[7]
-        p.parser.indentation = p[6]
+        p[0] = p[1] + '<' + p[2] + '>' + p[3] + p[4] + p[5] + indent + '</' + p[2] + '>' + p[7]
+
     elif len(p) > 6:
         p.parser.indentation = p[3]
-        p[0] = '<' + p[1]  + '>' + p[2][1:] + p[3] + p[4] + indent + '</' + p[1] + '>' + p[5] + p[6]
-        p.parser.indentation = p[5]
+        p[0] = '<' + p[1]  + '>' + p[2][1:] + p[3] + p[4] + indent + '</' + p[1] + '>' + p[6]
+
     elif len(p) > 5:
         p.parser.indentation = p[2]
-        p[0] = '<' + p[1]  + '>' + p[2] + p[3] + indent + '</' + p[1] + '>' + p[4] + p[5]
-        p.parser.indentation = p[4]
+        p[0] = '<' + p[1]  + '>' + p[2] + p[3] + indent + '</' + p[1] + '>' + p[5]
+
     elif len(p) > 3:
-        p[0] =  '<' + p[1] + '>' + p[2][1:] + '</' + p[1] + '>' + indent + p[3]
+        p[0] =  '<' + p[1] + '>' + p[2][1:] + '</' + p[1] + '>' + p[3]
     else:
         p[0] = ''
 
@@ -76,7 +76,7 @@ def p_tagparams(p):
 
 ###inicio do parsing
 parser = yacc.yacc(start='pug')
-parser.indentation = ''
+parser.indentation = '\n'
 
 data =  '''
 ul

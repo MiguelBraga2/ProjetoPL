@@ -255,9 +255,14 @@ def t_assign_BOOLEAN(t):
     return t
 
 
-# Define a rule for a VARIABLE, if preceded by the equals 
 def t_assign_VARIABLE(t):
     r'\w+'
+    t.lexer.pop_state()
+    return t
+
+
+def t_assign_NUMBER(t):
+    r'\d+'
     t.lexer.pop_state()
     return t
 
@@ -354,6 +359,11 @@ def t_block_BEGININTERP(t):
     return t
 
 
+def t_whitespaces(t):
+    r'\s+'
+    pass
+
+
 # Define an error handling function
 def t_ANY_error(t):
     print("Illegal character '%s'" % t.value[0])
@@ -372,35 +382,14 @@ t_interpolation_ignore = ' \t'
 lexer = lex.lex()
 lexer.indent_stack = [0]
 
+data = """
+ul      
+  li Primeiro item
+  li Segundo item
 
-
-
-
-
-
-
-
-
-
-
-
-# Test the lexer
-data =  '''
-ul       
-  // 
-   merda por aqui fora
-    vamos ver se nao da merda
-  li#ola.green(class='red')= msg       
-    li ola #{msg} ola manos
-ul
-  li
-    p.
-        mano tudo bem 
-        #{msg}
-'''
+"""
 
 lexer.input(data)
 
-for token in lexer:
-    print(token)
-
+for tok in lexer:
+    print(tok)
