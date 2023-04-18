@@ -1,102 +1,149 @@
 import ply.yacc as yacc
-
 from lex_parser import tokens
+from tree import Tree
 
-## incio da GIC
+def p_tags(p):
+    """
+    tags : tags tag
+         | tag
+    """
 
-start = 'pug'
-
-def p_pug(p):
-    '''
-    pug : comment DOCTYPE TEXT taglist
-        | DOCTYPE TEXT taglist
-        | taglist
-    '''
-    if len(p) > 4:
-        p[0] = p[1] + '\n<!' + p[2] + ' ' + p[3] + '>\n' + p[4]
-    elif len(p) > 3:
-        p[0] = '\n<!' + p[1] + ' ' + p[2] + '>\n' + p[3]
+    if len(p) == 3:
+        p[0].append(p[2]) 
     else:
-        p[0] = p[1]    
+        p[0] = [ p[1] ]
     
-def p_taglist(p):
-    '''
-    taglist : comment TAG TEXT INDENT taglist DEDENT taglist 
-            | TAG TEXT INDENT taglist DEDENT taglist 
-            | TAG INDENT taglist DEDENT taglist 
-            | TAG TEXT taglist
-            |
-    '''
-    indent = parser.indentation
 
-    if len(p) > 7:
-        p.parser.indentation = p[4]
-        p[0] = p[1] + '<' + p[2] + '>' + p[3] + p[4] + p[5] + indent + '</' + p[2] + '>' + p[7]
+def p_tag(p):
+    """
+    tag : TAG attributes content INDENT tags DEDENT 
+        | TAG attributes content tags
+        | TAG attributes content
+        | TAG attributes BAR 
+    """
+    if len(p) == 7:
+        p[0] = Tree('tag', '', p[1], p[5])
 
-    elif len(p) > 6:
-        p.parser.indentation = p[3]
-        p[0] = '<' + p[1]  + '>' + p[2][1:] + p[3] + p[4] + indent + '</' + p[1] + '>' + p[6]
-
-    elif len(p) > 5:
-        p.parser.indentation = p[2]
-        p[0] = '<' + p[1]  + '>' + p[2] + p[3] + indent + '</' + p[1] + '>' + p[5]
-
-    elif len(p) > 3:
-        p[0] =  '<' + p[1] + '>' + p[2][1:] + '</' + p[1] + '>' + p[3]
+    elif len(p) == 5:
+        p[0] = Tree('tag', '', p[1], p[4])
+    elif p[3] != '/':
+        pass
     else:
-        p[0] = ''
-
-def p_comment(p):
-    '''
-    comment : COMMENT
-    '''
-    pass
-
-def p_tagparams(p):
-    '''
-    tagparams : CLASS ID ATTRIBUTE 
-        | CLASS ATTRIBUTE ID  
-        | ATTRIBUTE CLASS ID  
-        | ATTRIBUTE ID CLASS
-        | ID ATTRIBUTE CLASS  
-        | ID CLASS ATTRIBUTE
-        | CLASS ATTRIBUTE  
-        | ATTRIBUTE CLASS  
-        | ATTRIBUTE ID  
-        | ID ATTRIBUTE 
-        | CLASS ID  
-        | ID CLASS 
-    ''' 
-    if len(p) > 3:
-        pass
-    elif len(p) > 2:
         pass
 
 
+def p_attributes(p):
+    """
+    attributes : class id LPAREN pug_attributes RPAREN
+               | class id 
+    """
+    if len(p) == 6:
+        pass
+    else:
+        pass
 
-###inicio do parsing
-parser = yacc.yacc(start='pug')
-parser.indentation = '\n'
 
-data =  '''
+def p_class(p):
+    """           
+    class : CLASS
+          | 
+    """
+    if len(p) == 2:
+        p[0] = Tree('class', '', p[1], [])
+    else:
+        pass
+
+def p_id(p):
+    """      
+    id : ID
+       | 
+    """
+    if len(p) == 2:
+        p[0] = Tree('id', '', p[1], [])
+    else:
+        pass
+
+def p_pug_attributes(p):
+    """
+    pug_attributes : pug_attributes sep pug_attribute
+                   | pug_attribute
+    """
+    if len(p) == 4:
+        pass
+    else:
+        pass
+
+def p_sep(p):
+    """               
+    sep : COMMA
+        |
+    """
+    if len(p) == 2:
+        p[0] = Tree('comma', '', p[1], [])
+    else:
+        pass
+
+def p_pug_attribute(p):
+    """
+    pug_attribute : ATTRIBUTENAME EQUALS STRING
+                  | ATTRIBUTENAME EQUALS BOOLEAN
+                  | ATTRIBUTENAME EQUALS NUMBER 
+    """
+    if p[3][0] == '"':
+        p[0] = Tree('string', '', p[1], [])
+    elif p[3] == 'true' or p[3] == 'false' :
+        p[0] = Tree('boolean', '', p[1], [])
+    else:
+        p[0] = Tree('number', '', p[1], [])
+
+
+def p_content(p):
+    """           
+    content : EQUALS interpolation
+            | text
+    """
+    if len(p) == 3:
+        pass
+    else:
+        pass
+
+def p_interpolation(p):
+    """
+    interpolation : STRING
+                  | VARIABLE
+    """
+    if p[1][0] == '"':
+        p[0] = Tree('string', '', p[1], [])
+    else:
+        p[0] = Tree('variable', '', p[1], [])
+    
+
+def p_text(p):
+    """
+    text : text TEXT BEGININTERP interpolation ENDINTERP
+         | text BEGININTERP interpolation ENDINTERP TEXT
+         | 
+    """
+    if len(p) == 6:
+        if p[3] == '#{':
+            pass
+        else:
+            pass
+    else:
+        pass
+
+parser = yacc.yacc(debug=True)
+
+data = """
 ul
-  li OLAAAAAAA
-    li ola
-ul
-  li massa
-'''
+  li Primeiro item
+  li Segundo item
+
+"""
 
 r = parser.parse(data)
-                 
-print(r)
-    
+
+tree = Tree("raiz", "", None, r)
+
+tree.print_tree() 
   
-
-###inicio do parsing
-#parser = yacc.yacc()
-#parser.success = True
-#fonte = ""
-#for line in sys.stdin:
-#    fonte += line   
-#parser.parse(fonte)
-

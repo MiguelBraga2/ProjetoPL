@@ -1,0 +1,37 @@
+
+tags : tags tag
+     | tag
+
+tag : TAG attributes content INDENT tags DEDENT 
+    | TAG attributes content tags
+    | TAG attributes content
+    | TAG attributes BAR 
+
+attributes : class id LPAREN pug_attributes RPAREN
+           | class id 
+
+class : CLASS
+      | 
+
+id : ID
+   | 
+
+pug_attributes : pug_attributes sep pug_attribute
+               | pug_attribute
+
+sep : COMMA
+    |
+
+pug_attribute : ATTRIBUTENAME EQUALS STRING
+              | ATTRIBUTENAME EQUALS BOOLEAN
+              | ATTRIBUTENAME EQUALS NUMBER 
+              
+content : EQUALS interpolation
+        | text
+
+interpolation : VARIABLE
+              | STRING 
+
+text: text TEXT BEGININTERP interpolation ENDINTERP
+    | text BEGININTERP interpolation ENDINTERP TEXT
+    | 
