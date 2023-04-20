@@ -383,14 +383,17 @@ t_interpolation_ignore = ' \t'
 lexer = lex.lex()
 lexer.indent_stack = [0]
 
-# data = """
-# ul      
-#   li Primeiro item
-#   li Segundo item
+data = """
+p.class1#teste(teste = 'teste' teste2 = 'teste2')
+    p ola
+        p ole
+    p
+    p(teste='teste')
+"""
 
 # """
 
-# lexer.input(data)
+lexer.input(data)
 
-# for tok in lexer:
-#     print(tok)
+for tok in lexer:
+    print(tok)
