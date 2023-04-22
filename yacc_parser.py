@@ -127,16 +127,15 @@ def p_interpolation(p):
 
 def p_text(p):
     """
-    text : text TEXT BEGININTERP interpolation ENDINTERP
-         | text BEGININTERP interpolation ENDINTERP TEXT
+    text : text BEGININTERP interpolation ENDINTERP
          | text TEXT
          | 
     """
-    if len(p) == 6:
-        if p[3] == '#{':
-            p[0] = p[1].addSubTree(Tree('text1', '', '', [Tree('TEXT', '', p[2], []), Tree('BEGININTERP', '', p[3], []), p[4], Tree('ENDINTERP', '', p[5], [])]))
+    if len(p) == 5:
+        if p[2] == '#{':
+            p[0] = p[1].addSubTree(Tree('text1', '', '', [Tree('BEGININTERP', '', p[3], []), p[4], Tree('ENDINTERP', '', p[5], [])]))
         else:
-            p[0] = p[1].addSubTree(Tree('text2', '', '', [Tree('BEGININTERP', '', p[2], []), p[3], Tree('ENDINTERP', '', p[4], []), Tree('TEXT', '', p[5], [])]))
+            p[0] = p[1].addSubTree(Tree('TEXT', '', p[5], []))
     elif len(p) == 3:
         p[0] = p[1].addSubTree(Tree('TEXT', '', p[2], []))
     else:
