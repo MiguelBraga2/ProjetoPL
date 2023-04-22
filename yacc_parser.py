@@ -117,7 +117,7 @@ def p_content(p):
 def p_interpolation(p):
     """
     interpolation : STRING
-                  | VARIABLE
+                  | IDENTIFIER
     """
     if p[1][0] == '"':
         p[0] = Tree('interpolation1', '', p[1], [])

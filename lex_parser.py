@@ -7,7 +7,7 @@ tokens = (
     'CLASS',
     'ID',
     'TAG',
-    'VARIABLE',
+    'IDENTIFIER',
     'ATTRIBUTENAME',
     'LPAREN',
     'RPAREN',
@@ -26,19 +26,18 @@ tokens = (
     'COMMENT',
     'NUMBER',
     'JSCODE',
-    # 'VAR',
-    # 'IF',
-    # 'IN',
-    # 'FOR',
-    # 'ELSE',
-    # 'WHEN',
-    # 'DEFAULT',
-    # 'CASE',
-    # 'MIXIN',
-    # 'WHILE',
-    # 'EACH',
-    # 'UNLESS',
-
+    'IF',
+    'ELSE',
+    'UNLESS',
+    'CONDITION',
+    'WHILE'
+        # 'IN',
+        # 'FOR',
+        # 'WHEN',
+        # 'DEFAULT',
+        # 'CASE',
+        # 'MIXIN',
+        # 'EACH',
 )
 
 
@@ -48,7 +47,8 @@ states = (
     ('attributes', 'exclusive'),
     ('interpolation', 'exclusive'),
     ('comment', 'exclusive'),
-    ('block', 'exclusive')
+    ('block', 'exclusive'),
+    ('conditional', 'exclusive')
 )
 
 # Function to get indentation level 
@@ -96,15 +96,13 @@ def t_INITIAL_indentation(t):
 def t_ignorecomment_indentation(t):
     r'\n[ \t]*'
 
-    # increment the line number
-    t.lexer.lineno += 1
-
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
 
     previous_indentation = t.lexer.indent_stack[-1]
     
     if previous_indentation == current_indentation:
+        t.lexer.lineno += 1
         t.lexer.begin('INITIAL')
         return 
     elif previous_indentation > current_indentation: 
@@ -112,15 +110,13 @@ def t_ignorecomment_indentation(t):
         t.lexer.begin('INITIAL')
         return
     else:
+        t.lexer.lineno += 1
         return
-    
+
 
 # Define a rule for the indentation in the comment state
 def t_comment_indentation(t):
     r'\n[ \t]*'
-    
-     # increment the line number
-    t.lexer.lineno += 1
 
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
@@ -129,12 +125,14 @@ def t_comment_indentation(t):
 
     if previous_indentation == current_indentation:
         t.lexer.begin('INITIAL')
+        t.lexer.lineno += 1
         return 
     elif previous_indentation > current_indentation:
         t.lexer.begin('INITIAL')
         t.lexer.skip(-len(t.value))
         return 
     else:
+        t.lexer.lineno += 1
         aux = current_indentation
         nc = 0
 
@@ -155,9 +153,6 @@ def t_comment_indentation(t):
 # Define a rule for the indentation in the block state
 def t_block_indentation(t): # Rever
     r'\n[ \t]*'
-    
-     # increment the line number
-    t.lexer.lineno += 1
 
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
@@ -166,12 +161,14 @@ def t_block_indentation(t): # Rever
 
     if previous_indentation == current_indentation:
         t.lexer.begin('INITIAL')
+        t.lexer.lineno += 1
         return 
     elif previous_indentation > current_indentation:
         t.lexer.begin('INITIAL')
         t.lexer.skip(-len(t.value))
         return 
     else:
+        t.lexer.lineno += 1
         aux = current_indentation
         nc = 0
 
@@ -259,7 +256,7 @@ def t_assign_BOOLEAN(t):
     return t
 
 
-def t_assign_VARIABLE(t):
+def t_assign_IDENTIFIER(t):
     r'\w+'
     t.lexer.pop_state()
     return t
@@ -293,7 +290,7 @@ def t_interpolation_STRING(t):
     return t
 
 
-def t_interpolation_VARIABLE(t):
+def t_interpolation_IDENTIFIER(t):
     r'\w+'
     return t
 
@@ -301,6 +298,35 @@ def t_interpolation_VARIABLE(t):
 def t_interpolation_ENDINTERP(t):
     r'\}'
     t.lexer.pop_state()
+    return t
+
+
+def t_IF(t):
+    r'if\s'
+    t.lexer.begin('conditional')
+    return t
+
+
+def t_WHILE(t):
+    r'while\s'
+    t.lexer.begin('conditional')
+    return t
+
+
+def t_conditional_CONDITION(t):
+    r'.+'
+    t.lexer.begin('INITIAL')
+    return t
+
+
+def t_ELSE(t):
+    r'else\s'
+    return t
+
+
+def t_unless(t):
+    r'unless'
+    t.lexer.begin('conditional')
     return t
 
 
@@ -374,6 +400,7 @@ t_ignorecomment_ignore = ''
 t_comment_ignore = ''
 t_attributes_ignore = ' \t\n'
 t_interpolation_ignore = ' \t'
+t_conditional_ignore = ' \t'
 
 
 # Create the lexer
@@ -381,11 +408,11 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-p
-  p
-    p.
-    - var title = "On Dogs: Man's Best Friend";
-       ola
+- var bool = false;
+if bool
+    p Olá manos!
+else if bool == false
+    p Xau manos!
 """
 
 # """
