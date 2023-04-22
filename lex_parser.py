@@ -16,7 +16,6 @@ tokens = (
     'DOISPONTOS',
     'QUESTIONMARK',
     'BOOLEAN',
-    'DOCTYPE',
     'STRING',
     'IGNORECOMMENT',
     'BAR',
@@ -305,12 +304,6 @@ def t_interpolation_ENDINTERP(t):
     return t
 
 
-# Define a rule for the DOCTYPE token
-def t_DOCTYPE(t):
-    r'doctype'
-    return t
-
-
 # Define a rule for the TAG token
 def t_TAG(t):
     r'[a-z][a-z0-9]*'
@@ -391,7 +384,7 @@ data = """
 p
   p
     p.
-- var title = "On Dogs: Man's Best Friend";
+    - var title = "On Dogs: Man's Best Friend";
        ola
 """
 
