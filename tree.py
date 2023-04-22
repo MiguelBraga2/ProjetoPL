@@ -1,3 +1,6 @@
+import js2py
+context = js2py.EvalJs({})
+
 class Tree:
     def __init__(self, type, indentation, value, trees):
         self.type = type
@@ -14,87 +17,89 @@ class Tree:
 
         print(')')
 
-    def to_html(self):
-        str = ""
+    def to_html(self, indentation=0):
+        string = ""
         if self.type == 'tags':
             for tree in self.trees:
-                str += tree.to_html()
-        
-        
+                string += tree.to_html() + "\n"
+        elif self.type == 'tag_code1':
+            string += self.trees[0].to_html()
+        elif self.type == 'tag_code2':
+            pass
         # tag : TAG attributes content INDENT tags DEDENT 
         elif self.type == 'tag1':
-            str = '<' + self.trees[0].to_html() + self.trees[1].to_html() + '>' + self.trees[2].to_html() + self.trees[3].to_html() +\
-                    self.trees[4].to_html() + self.trees[5].to_html() + \
-                   '</' + self.trees[0].to_html() + '>'
+            string = ' ' * indentation + '<' + self.trees[0].to_html() + self.trees[1].to_html() + '>' + self.trees[2].to_html() +'\n' +\
+                    self.trees[4].to_html(indentation+2) + '\n' + \
+                  ' ' * indentation + '</' + self.trees[0].to_html() + '>'
         # tag : TAG attributes content 
         elif self.type == 'tag2':
-            str = '<' + self.trees[0].to_html() + self.trees[1].to_html() + '>' + self.trees[2].to_html() + '</' + self.trees[0].to_html() + '>'
+            string = ' ' * indentation + '<' + self.trees[0].to_html() + self.trees[1].to_html() + '>' + self.trees[2].to_html() + '</' + self.trees[0].to_html() + '>'
         # tag: TAG attributes BAR
         elif self.type == 'tag3':
-            str = '<' + self.trees[0].to_html() + '/>'
+            string = ' ' * indentation + '<' + self.trees[0].to_html() + '/>'
         elif self.type == 'TAG':
             return self.value
         elif self.type == 'attributes':
             for tree in self.trees:
-                str += tree.to_html()
+                string += tree.to_html()
         # pug_attributes : pug_attributes sep pug_attribute
         #                | pug_attribute
         elif self.type == 'pug_attributes':
             for tree in self.trees:
-                str += tree.to_html() 
+                string += tree.to_html() 
         elif self.type == 'pug_sep_attribute':
-            str = self.trees[0].to_html() + self.trees[1].to_html()
+            string = self.trees[0].to_html() + self.trees[1].to_html()
         elif self.type == 'sep':
-            str = ""
+            string = ""
         elif self.type == 'COMMA':
-            str = ", "
+            string = ", "
         elif self.type == 'pug_attribute':
-            str = " " + self.trees[0].to_html() + self.trees[1].to_html() + self.trees[2].to_html()
+            string = " " + self.trees[0].to_html() + self.trees[1].to_html() + self.trees[2].to_html()
         elif self.type == 'ATTRIBUTENAME':
-            str = self.value
+            string = self.value
         elif self.type == 'EQUALS':
-            str = self.value
-        elif self.type == 'STRING' or self.type == 'BOOLEAN' or self.type == 'NUMBER':
-            str = self.value
+            string = self.value
+        elif self.type == 'stringING' or self.type == 'BOOLEAN' or self.type == 'NUMBER':
+            string = self.value
         # class : class CLASS 
         #       | 
         elif self.type == 'class':
             if len(self.trees) > 0:
-                str += ' class="'
+                string += ' class="'
                 for tree in self.trees:
-                    str += tree.to_html() + ' '
-                str += '"'
+                    string += tree.to_html() + ' '
+                string += '"'
         elif self.type == 'CLASS':
-            str += self.value
+            string += self.value
         # id : 
         
         elif self.type == 'id':
             pass
         elif self.type == 'ID':
-            str += " " + "id=" + self.value
+            string += " " + 'id="' + self.value + '"'
         elif self.type == 'content1':
-            pass
+            string += self.trees[1].to_html()
         # content : text
         elif self.type == 'content2':
-            str = self.trees[0].to_html()
-        # interpolation : STRING
+            string = self.trees[0].to_html()
+        # interpolation : stringING
         elif self.type == 'interpolation1':
-            pass
+            string = self.value[1:-1]
         # interpolation : VARIABLE
         elif self.type == 'interpolation2':
-            pass
+            string = str(context.eval(self.value))
         elif self.type == 'text1':
             pass
         elif self.type == 'text2':
             pass
         elif self.type == 'text':
             for tree in self.trees:
-                str += tree.to_html() + " "
+                string += tree.to_html() + " "
         elif self.type == 'TEXT':
-            str = self.value
+            string = self.value
         else:
             pass
-        return str
+        return string
 
     def addSubTree(self, tree):
         self.trees.append(tree)

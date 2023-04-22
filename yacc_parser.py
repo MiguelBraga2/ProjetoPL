@@ -1,11 +1,12 @@
 import ply.yacc as yacc
 from lex_parser import tokens
-from tree import Tree
+from tree import Tree, context
+
 
 def p_tags(p):
     """
-    tags : tags tag
-         | tag
+    tags : tags tag_code
+         | tag_code
     """
 
     if len(p) == 3:
@@ -13,6 +14,16 @@ def p_tags(p):
     else:
         p[0] = Tree('tags', '', '', [p[1]])
 
+def p_tag_code(p):
+    """
+    tag_code : tag
+             | JSCODE
+    """
+    if isinstance(p[1], str) == False:
+        p[0] = Tree('tag_code1', '', '', [p[1]])
+    else:
+        context.execute(p[1]) 
+        p[0] = Tree('tag_code2', '', '', [Tree('JSCODE', '', p[1], [])])
 
 def p_tag(p):
     """
@@ -134,11 +145,11 @@ def p_text(p):
 parser = yacc.yacc(debug=True)
 
 data = """
-p.class1#teste(teste = 'teste' testeaux = 'teste2')
-    p ola
-        p ole
-    p
-    p(teste='teste')
+- var a = 2.5
+ul
+  li 
+    p= a
+  li= a
 """
 
 tree = parser.parse(data)

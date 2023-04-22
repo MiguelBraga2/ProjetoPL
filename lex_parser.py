@@ -25,7 +25,8 @@ tokens = (
     'DOT',
     'TEXT',
     'COMMENT',
-    'NUMBER'
+    'NUMBER',
+    'JSCODE',
     # 'VAR',
     # 'IF',
     # 'IN',
@@ -50,7 +51,6 @@ states = (
     ('comment', 'exclusive'),
     ('block', 'exclusive')
 )
-
 
 # Function to get indentation level 
 def indetation_level(line):
@@ -250,6 +250,10 @@ def t_EQUALS(t):
     t.lexer.push_state('assign')
     return t
 
+def t_JSCODE(t):
+    r'\-.*'
+    t.value = t.value[1:]
+    return t
 
 def t_assign_BOOLEAN(t):
     r'(true|else)'
@@ -384,11 +388,11 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-p.class1#teste(teste = 'teste' teste2 = 'teste2')
-    p ola
-        p ole
-    p
-    p(teste='teste')
+p
+  p
+    p.
+- var title = "On Dogs: Man's Best Friend";
+       ola
 """
 
 # """
