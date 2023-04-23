@@ -30,14 +30,13 @@ tokens = (
     'ELSE',
     'UNLESS',
     'CONDITION',
-    'WHILE'
-        # 'IN',
-        # 'FOR',
+    'WHILE',
+    'EACH',
+    'IN'
         # 'WHEN',
         # 'DEFAULT',
         # 'CASE',
         # 'MIXIN',
-        # 'EACH',
 )
 
 
@@ -48,7 +47,8 @@ states = (
     ('interpolation', 'exclusive'),
     ('comment', 'exclusive'),
     ('block', 'exclusive'),
-    ('conditional', 'exclusive')
+    ('conditional', 'exclusive'),
+    ('iteration', 'exclusive')
 )
 
 # Function to get indentation level 
@@ -300,6 +300,29 @@ def t_interpolation_ENDINTERP(t):
     t.lexer.pop_state()
     return t
 
+def t_EACH(t):
+    r'each\s'
+    t.lexer.begin('iteration')
+    return t
+
+
+def t_iteration_JSCODE(t):
+    r'(?<=(in\s)).*'
+    t.lexer.begin('INITIAL')
+    return t 
+
+
+def t_iteration_COMMA(t):
+    r','
+    return t
+
+def t_iteration_IN(t):
+    r'in\s'
+    return t
+
+def t_iteration_IDENTIFIER(t):
+    r'\w+'
+    return t
 
 def t_IF(t):
     r'if\s'
@@ -401,6 +424,7 @@ t_comment_ignore = ''
 t_attributes_ignore = ' \t\n'
 t_interpolation_ignore = ' \t'
 t_conditional_ignore = ' \t'
+t_iteration_ignore = ' \t'
 
 
 # Create the lexer
@@ -408,11 +432,9 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-- var bool = false;
-if bool
-    p Olá manos!
-else if bool == false
-    p Xau manos!
+ul
+  each val, key in {1: 'one', 2: 'two', 3: 'three'}
+    li= key
 """
 
 # """
