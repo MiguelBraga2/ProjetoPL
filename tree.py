@@ -2,9 +2,8 @@ import js2py
 context = js2py.EvalJs({})
 
 class Tree:
-    def __init__(self, type, indentation, value, trees):
+    def __init__(self, type, value, trees):
         self.type = type
-        self.indentation = indentation
         self.value = value
         self.trees = trees
 
