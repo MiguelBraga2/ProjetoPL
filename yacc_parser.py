@@ -180,7 +180,7 @@ def p_text(p):
     elif len(p) == 3:
         p[0] = p[1] + [ Tree('TEXT', p[2], []) ]
     else:
-        p[0] = [ Tree('TEXT', p[2], []) ]
+        p[0] = [ Tree('TEXT', p[1], []) ]
 
 def p_error(p):
     print("Erro sintático")
@@ -189,15 +189,15 @@ def p_error(p):
 parser = yacc.yacc(debug=True)
 
 data = """
-- var a = 2.5
-#user
-  li 
-    p= a
-  li= a
+ul
+  ul
+    li 1
+  li 2
+  li 3
 """
 
 tree = parser.parse(data)
 
-print(tree.print_tree())
+print(tree.to_html())
 
   

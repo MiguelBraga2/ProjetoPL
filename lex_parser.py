@@ -381,6 +381,7 @@ def t_DOT(t):
 
 def t_TEXT(t):
     r'((?<!\s)[ \t]+[^(\#\{)\n]+|<.*>|(?<=})[ \t]*[^(\#\{)\n]+)'
+    t.value = t.value[1:]
     if t.value.isspace():
         return
     return t
@@ -432,14 +433,11 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-- var a = 2.5
-#user
-  li 
-    p= a
-  li= a
+ul
+  li 1
+  li 2
+  li 3
 """
-
-# """
 
 lexer.input(data)
 
