@@ -177,7 +177,7 @@ def p_text(p):
          | TEXT
     """
     if len(p) == 5:
-        p[0] = p[1] + [Tree('BEGININTERP', p[3], []), p[4], Tree('ENDINTERP', p[4], [])]
+        p[0] = p[1] + [Tree('BEGININTERP', p[2], []), p[3], Tree('ENDINTERP', p[4], [])]
     elif len(p) == 4:
         p[0] = [Tree('BEGININTERP', p[1], []), p[2], Tree('ENDINTERP', p[3], [])]
     elif len(p) == 3:
@@ -192,13 +192,13 @@ def p_error(p):
 parser = yacc.yacc(debug=True)
 
 data = """
-- var ola = "ola"
+- var ola = "jose"
 
 ul
   ul.class#id.class2
     li 1
   li(attr=1) 2
-  li 
+  li #{ola}! Tudo bem #{ola}?
   li= ola
   li 
 """ 

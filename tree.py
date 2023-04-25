@@ -9,10 +9,10 @@ class Tree:
 
 
     def print_tree(self):
-        print(self.type + '  ' +  self.value + '(')
+        print(self.type + '  ' +  self.value + '(', end='')
         for tree in self.trees:
             tree.print_tree()
-        print(')')
+        print(')',end='')
 
     def to_html(self, indentation="\n"):
         string = ""
@@ -46,7 +46,10 @@ class Tree:
                 elif self.trees[i].type == 'JSOCDE':
                     pass
                 elif self.trees[i].type == 'IDENTIFIER':
-                    string += self.trees[i].value + '</' + tag + '>'
+                    if self.trees[i-1].type != 'EQUALS':
+                        string += self.trees[i].value
+                    else:    
+                        string += self.trees[i].value + '</' + tag + '>'
                 elif self.trees[i].type == 'ATTRIBUTENAME':
                     string += f" {self.trees[i].value}"
                 elif self.trees[i].type == 'EQUALS':
@@ -65,17 +68,25 @@ class Tree:
                 elif self.trees[i].type == 'BAR':
                     string += '/>'
                 elif self.trees[i].type == 'BEGININTERP':
-                    pass
+                    if self.trees[i-1].type != 'TEXT':
+                        string += '>'
                 elif self.trees[i].type == 'ENDINTERP':
-                    pass
+                    if len(self.trees) == i + 1 or self.trees[i+1].type != 'TEXT':
+                        string += '</' + tag + '>' 
                 elif self.trees[i].type == 'TEXT':
-                    if classes != "":
-                        classes = classes[:-1]
-                        string += ' class="' + classes + '"'
-                        classes = ""
-                    string += '>' + self.trees[i].value
-                    if (len(self.trees)-1 == i) or ((self.trees[i+1].type != 'BEGININTERP') and (self.trees[i+1].type != 'INDENT')):
-                        string += '</' + tag + '>'
+                    if self.trees[i-1].type != 'ENDINTERP':
+                        if classes != "":
+                            classes = classes[:-1]
+                            string += ' class="' + classes + '"'
+                            classes = ""
+                        string += '>' + self.trees[i].value[1:]
+                        if (len(self.trees)-1 == i) or ((self.trees[i+1].type != 'BEGININTERP') and (self.trees[i+1].type != 'INDENT')):
+                            string += '</' + tag + '>'
+                    elif len(self.trees) > i+1 and self.trees[i+1].type == 'BEGININTERP':
+                        string += self.trees[i].value
+                    elif self.trees[i-1].type == 'ENDINTERP':
+                        string += self.trees[i].value + '</' + tag + '>'
+                    
                 elif self.trees[i].type == 'COMMENT':
                     pass
                 elif self.trees[i].type == 'NUMBER':

@@ -381,8 +381,6 @@ def t_DOT(t):
 
 def t_TEXT(t):
     r'((?<!\s)[ \t]+[^(\#\{)\n]+|<.*>|(?<=})[ \t]*[^(\#\{)\n]+)'
-    t.value = t.value[1:]
-    #print(t.value + "l")
     if t.value.isspace():
         return
     return t
@@ -434,16 +432,16 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-- var ola = "ola"
+- var ola = "jose"
 
 ul
   ul.class#id.class2
     li 1
   li(attr=1) 2
-  li= 3
+  li #{ola}! Tudo bem #{ola}?
   li= ola
   li 
-"""
+""" 
 
 lexer.input(data)
 
