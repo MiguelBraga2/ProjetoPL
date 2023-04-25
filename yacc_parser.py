@@ -198,7 +198,7 @@ ul
   ul.class#id.class2
     li 1
   li(attr=1) 2
-  li #{ola}! Tudo bem #{ola}?
+  li Ola #{ola}! Tudo bem #{ola}?
   li= ola
   li 
 """ 
