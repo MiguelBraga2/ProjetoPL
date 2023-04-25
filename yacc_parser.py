@@ -26,7 +26,7 @@ def p_line(p):
         p[0] = [ Tree('COMMENT', p[1], []) ]
     else:
         context.execute(p[1]) 
-        p[0] = [ Tree('JSCODE', p[1], []) ]
+        p[0] = []
 
 def p_tagline(p):
     """
@@ -107,7 +107,7 @@ def p_class(p):
     if len(p) == 3:
         p[0] = p[1] + [ Tree('CLASS', p[2], []) ]
     else:
-        p[0] = [ Tree('CLASS', p[2], []) ]
+        p[0] = [ Tree('CLASS', p[1], []) ]
 
 
 def p_pug_attributes(p):
@@ -137,12 +137,12 @@ def p_attribute_value(p):
                     | BOOLEAN
                     | NUMBER
     """
-    if p[3][0] == '"':
-        p[0] = [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('STRING', p[3], []) ]
-    elif p[3] == 'true' or p[3] == 'false' :
-        p[0] = [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('BOOLEAN', p[3], []) ]
+    if p[1][0] == '"':
+        p[0] = [Tree('STRING', p[1], []) ]
+    elif p[1] == 'true' or p[1] == 'false' :
+        p[0] = [Tree('BOOLEAN', p[1], []) ]
     else:
-        p[0] = [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('NUMBER', p[3], []) ]
+        p[0] = [Tree('NUMBER', p[1], []) ]
 
 
 def p_content(p):
@@ -159,11 +159,14 @@ def p_interpolation(p):
     """
     interpolation : STRING
                   | IDENTIFIER
+                  | NUMBER
     """
     if p[1][0] == '"':
         p[0] = Tree('STRING', p[1], [])
+    elif p[1][0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']:
+        p[0] = Tree('NUMBER', p[1], [])
     else:
-        p[0] = Tree('IDENTIFIER', p[1], [])
+        p[0] = Tree('IDENTIFIER', context.eval(p[1]), [])
     
 
 def p_text(p):
@@ -189,12 +192,16 @@ def p_error(p):
 parser = yacc.yacc(debug=True)
 
 data = """
+- var ola = "ola"
+
 ul
-  ul
+  ul.class#id.class2
     li 1
-  li 2
-  li 3
-"""
+  li(attr=1) 2
+  li 
+  li= ola
+  li 
+""" 
 
 tree = parser.parse(data)
 

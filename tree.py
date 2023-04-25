@@ -17,6 +17,7 @@ class Tree:
     def to_html(self, indentation="\n"):
         string = ""
         tag = ""
+        classes = ""
         previuos_identation = indentation
         if self.type == 'tags':
             i = 0
@@ -25,23 +26,38 @@ class Tree:
                 if self.trees[i].type == 'TAG':
                     tag = self.trees[i].value
                     string += indentation + "<" + self.trees[i].value
+                    if len(self.trees) == i+1 or self.trees[i+1].type == 'TAG':
+                        string += ">" + "</" + tag + ">"
                 elif self.trees[i].type == 'INDENT':
+                    if classes != "":
+                        classes = classes[:-1]
+                        string += ' class="' + classes + '"'
+                        classes = ""
                     string += '>'
                     indentation = self.trees[i].value
                 elif self.trees[i].type == 'DEDENT':
                     string += previuos_identation + '</' + tag + '>'
+                    indentation = previuos_identation
                 elif self.trees[i].type == 'CLASS':
-                    string += " class=" + '"{self.trees[i].value}"' 
+                    classes += self.trees[i].value + " "
+                    #string += " class=" + f'"{self.trees[i].value}"' 
                 elif self.trees[i].type == 'ID':
-                    string += " id=" + '"{self.trees[i].value}"'
+                    string += " id=" + f'"{self.trees[i].value}"'
                 elif self.trees[i].type == 'JSOCDE':
                     pass
                 elif self.trees[i].type == 'IDENTIFIER':
-                    pass
+                    string += self.trees[i].value + '</' + tag + '>'
                 elif self.trees[i].type == 'ATTRIBUTENAME':
-                    string += " {self.trees[i].value}"
+                    string += f" {self.trees[i].value}"
                 elif self.trees[i].type == 'EQUALS':
-                    string += "="
+                    if self.trees[i-1].type != 'ATTRIBUTENAME': # Interpolation =
+                        if classes != "":
+                            classes = classes[:-1]
+                            string += ' class="' + classes + '"'
+                            classes = ""
+                        string += '>'
+                    else: # atributos
+                        string += '='
                 elif self.trees[i].type == 'BOOLEAN':
                     string += self.trees[i].value
                 elif self.trees[i].type == 'STRING':
@@ -53,15 +69,21 @@ class Tree:
                 elif self.trees[i].type == 'ENDINTERP':
                     pass
                 elif self.trees[i].type == 'TEXT':
+                    if classes != "":
+                        classes = classes[:-1]
+                        string += ' class="' + classes + '"'
+                        classes = ""
                     string += '>' + self.trees[i].value
                     if (len(self.trees)-1 == i) or ((self.trees[i+1].type != 'BEGININTERP') and (self.trees[i+1].type != 'INDENT')):
                         string += '</' + tag + '>'
                 elif self.trees[i].type == 'COMMENT':
                     pass
                 elif self.trees[i].type == 'NUMBER':
-                    pass
-                elif self.trees[i].type == 'JSCODE':
-                    pass
+                    if self.trees[i-2].type != 'ATTRIBUTENAME': # Interpolation =
+                        string += self.trees[i].value + '</' + tag + '>'
+                    else: # Attribute
+                        string += '"' + self.trees[i].value + '"'
+
                 elif self.trees[i].type == 'tags':
                     string +=self.trees[i].to_html(indentation)
                 i += 1 

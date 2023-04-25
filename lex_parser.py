@@ -255,15 +255,13 @@ def t_assign_BOOLEAN(t):
     r'(true|else)'
     return t
 
-
-def t_assign_IDENTIFIER(t):
-    r'\w+'
+def t_assign_NUMBER(t):
+    r'\d+'
     t.lexer.pop_state()
     return t
 
-
-def t_assign_NUMBER(t):
-    r'\d+'
+def t_assign_IDENTIFIER(t):
+    r'\w+'
     t.lexer.pop_state()
     return t
 
@@ -289,11 +287,13 @@ def t_interpolation_STRING(t):
     r'\'[^\']*\'|"[^\"]*"'
     return t
 
+def t_interpolation_NUMBER(t):
+    r'\d+'
+    return t
 
 def t_interpolation_IDENTIFIER(t):
     r'\w+'
     return t
-
 
 def t_interpolation_ENDINTERP(t):
     r'\}'
@@ -382,6 +382,7 @@ def t_DOT(t):
 def t_TEXT(t):
     r'((?<!\s)[ \t]+[^(\#\{)\n]+|<.*>|(?<=})[ \t]*[^(\#\{)\n]+)'
     t.value = t.value[1:]
+    #print(t.value + "l")
     if t.value.isspace():
         return
     return t
@@ -408,7 +409,7 @@ def t_block_BEGININTERP(t):
 
 
 def t_whitespaces(t):
-    r'\s+'
+    r'[ \t]+'
     pass
 
 
@@ -433,10 +434,15 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
+- var ola = "ola"
+
 ul
-  li 1
-  li 2
-  li 3
+  ul.class#id.class2
+    li 1
+  li(attr=1) 2
+  li= 3
+  li= ola
+  li 
 """
 
 lexer.input(data)
