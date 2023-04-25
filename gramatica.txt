@@ -1,37 +1,53 @@
 
-tags : tags tag
-     | tag
+lines : lines line
+      | line
 
-tag : TAG attributes content INDENT tags DEDENT 
-    | TAG attributes content tags
-    | TAG attributes content
-    | TAG attributes BAR 
+line : tagline
+     | JSCODE
+     | COMMENT
 
-attributes : class id LPAREN pug_attributes RPAREN
-           | class id 
+tagline : tag content INDENT lines DEDENT 
+        | tag INDENT lines DEDENT 
+        | tag content 
+        | tag BAR
+        | tag
 
-class : CLASS
-      | 
+tag : TAG attributes 
+    | TAG
+    | class_id_attributes LPAREN pug_attributes RPAREN 
+    | class_id_attributes
 
-id : ID
-   | 
+attributes : class_id_attributes LPAREN pug_attributes RPAREN
+           | class_id_attributes
+           | LPAREN pug_attributes RPAREN
 
-pug_attributes : pug_attributes sep pug_attribute
+class_id_attributes : classes ID CLASS
+                    | ID classes
+                    | classes ID
+                    | classes
+                    | ID
+
+classes : classes CLASS
+        | CLASS
+
+pug_attributes : pug_attributes COMMA pug_attribute
+               | pug_attributes pug_attribute
                | pug_attribute
 
-sep : COMMA
-    |
+pug_attribute : ATTRIBUTENAME EQUALS attribute_value
 
-pug_attribute : ATTRIBUTENAME EQUALS STRING
-              | ATTRIBUTENAME EQUALS BOOLEAN
-              | ATTRIBUTENAME EQUALS NUMBER 
-              
+attribute_value : STRING
+                | BOOLEAN
+                | NUMBER
+
+
 content : EQUALS interpolation
         | text
 
 interpolation : VARIABLE
               | STRING 
 
-text: text TEXT BEGININTERP interpolation ENDINTERP
-    | text BEGININTERP interpolation ENDINTERP TEXT
-    | 
+text : text BEGININTERP interpolation ENDINTERP
+     | text TEXT
+     | BEGININTERP interpolation ENDINTERP
+     | TEXT

@@ -9,11 +9,9 @@ class Tree:
 
 
     def print_tree(self):
-        #print(self.indentation + self.type)
-        print(self.indentation + self.value + '(')
+        print(self.type + '  ' +  self.value + '(')
         for tree in self.trees:
             tree.print_tree()
-
         print(')')
 
     def to_html(self, indentation=0):
@@ -101,5 +99,5 @@ class Tree:
         return string
 
     def addSubTree(self, tree):
-        self.trees.append(tree)
+        self.trees += tree
         return self

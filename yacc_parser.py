@@ -3,105 +3,146 @@ from lex_parser import tokens
 from tree import Tree, context
 
 
-def p_tags(p):
+def p_lines(p):
     """
-    tags : tags tag_code
-         | tag_code
+    lines : lines line
+          | line
     """
 
     if len(p) == 3:
         p[0] = p[1].addSubTree(p[2])
     else:
-        p[0] = Tree('tags', '', [p[1]])
+        p[0] = Tree('tags', '', p[1])
 
-def p_tag_code(p):
+def p_line(p):
     """
-    tag_code : tag
-             | JSCODE
+    line : tagline
+         | JSCODE
+         | COMMENT
     """
-    if isinstance(p[1], str) == False:
-        p[0] = Tree('tag_code1', '', [p[1]])
+    if type(p[1]) == list:
+        p[0] = p[1]
+    elif p[1].startswith('//'):
+        p[0] = [ Tree('COMMENT', p[1], []) ]
     else:
         context.execute(p[1]) 
-        p[0] = Tree('tag_code2', '', [Tree('JSCODE', p[1], [])])
+        p[0] = [ Tree('JSCODE', p[1], []) ]
+
+def p_tagline(p):
+    """
+    tagline : tag content INDENT lines DEDENT 
+            | tag INDENT lines DEDENT 
+            | tag content 
+            | tag BAR
+            | tag
+    """
+    if len(p) == 6:
+        p[0] = p[1] + p[2] + [Tree('INDENT', p[3], []), p[4], Tree('DEDENT', p[5], [])]
+    elif len(p) == 5:
+        p[0] = p[1] + [Tree('INDENT', p[2], []), p[3], Tree('DEDENT', p[4], [])]
+    elif len(p) == 3: 
+        if p[2] != '/':
+            p[0] = p[1] + p[2]
+        else:
+            p[0] = p[1] + [Tree('BAR', p[2], [])]
+    else:
+        p[0] = p[1]
 
 def p_tag(p):
     """
-    tag : TAG attributes content INDENT tags DEDENT 
-        | TAG attributes content 
-        | TAG attributes BAR
+    tag : class_id_attributes LPAREN pug_attributes RPAREN 
+        | TAG attributes 
+        | class_id_attributes
+        | TAG
     """
-    if len(p) == 7:
-        p[0] = Tree('tag1', '', [Tree('TAG', p[1], []), p[2], p[3], Tree('INDENT', p[4], []), p[5], Tree('DEDENT', p[6], [])])
-    elif p[3] != '/':
-        p[0] = Tree('tag2', '', [Tree('TAG', p[1], []), p[2], p[3]])
-    elif p[3] == '/':
-        p[0] = Tree('tag3', '', [Tree('TAG', p[1], []), p[2], Tree('BAR', p[3], [])])
-
+    if len(p) == 5:
+        p[0] = p[1] + p[3]
+    elif len(p) == 3:
+        p[0] = [ Tree('TAG', p[1], []) ] + p[2]
+    elif type(p[1]) == list:
+        p[0] = p[1]
+    else:
+        p[0] = [ Tree('TAG', p[1], []) ]
 
 def p_attributes(p):
     """
-    attributes : class id LPAREN pug_attributes RPAREN
-               | class id 
+    attributes : class_id_attributes LPAREN pug_attributes RPAREN 
+               | LPAREN pug_attributes RPAREN
+               | class_id_attributes
     """
-    if len(p) == 6:
-        p[0] = Tree('attributes', '', [p[1], p[2], p[4]]) # parêntesis não precisos
+    if len(p) == 5:
+        p[0] = p[1] + p[3] # parêntesis não precisos
+    elif len(p) == 4:
+        p[0] = p[2]
     else:
-        p[0] = Tree('attributes', '', [p[1], p[2]])
+        p[0] = p[1]
 
+def p_class_id_attributes(p):
+    """
+    class_id_attributes : class ID CLASS
+                        | class ID 
+                        | ID class
+                        | ID
+                        | class
+    """
+    if len(p) == 4:
+        p[0] = p[1] + [ Tree('ID', p[2], []), Tree('CLASS', p[3], []) ]
+    elif len(p) == 3:
+        if type(p[1]) == list:
+            p[0] = p[1] + [Tree('ID', p[2], [])] 
+        else:
+            p[0] = [Tree('ID', p[1], [])] + p[2]
+    else:
+        if type(p[1]) == list:
+            p[0] = p[1] 
+        else:
+            p[0] = [Tree('ID', p[1], [])] 
+        
 
 def p_class(p):
     """           
     class : class CLASS 
-          | 
+          | CLASS
     """
     if len(p) == 3:
-        p[0] = p[1].addSubTree(Tree('CLASS', p[2], []))
+        p[0] = p[1] + [ Tree('CLASS', p[2], []) ]
     else:
-        p[0] = Tree('class', '', [])
+        p[0] = [ Tree('CLASS', p[2], []) ]
 
-def p_id(p):
-    """      
-    id : ID
-       | 
-    """
-    if len(p) == 2:
-        p[0] = Tree('ID', p[1], [])
-    else:
-        p[0] = Tree('id', '', [])
 
 def p_pug_attributes(p):
     """
-    pug_attributes : pug_attributes sep pug_attribute
+    pug_attributes : pug_attributes COMMA pug_attribute
+                   | pug_attributes pug_attribute
                    | pug_attribute
     """
     if len(p) == 4:
-        p[0] = p[1].addSubTree(Tree('pug_sep_attribute', '', [p[2], p[3]]))
+        p[0] = p[1] + p[3]
+    elif len(p) == 3:
+        p[0] = p[1] + p[2]
     else:
-        p[0] = Tree('pug_attributes', '', [p[1]])
+        p[0] = p[1]
 
-def p_sep(p):
-    """               
-    sep : COMMA
-        |
-    """
-    if len(p) == 2:
-        p[0] = Tree('COMMA', p[1], [])
-    else:
-        p[0] = Tree('sep', '', '')
 
 def p_pug_attribute(p):
+    """               
+    pug_attribute : ATTRIBUTENAME EQUALS attribute_value
     """
-    pug_attribute : ATTRIBUTENAME EQUALS STRING
-                  | ATTRIBUTENAME EQUALS BOOLEAN
-                  | ATTRIBUTENAME EQUALS NUMBER 
+    p[0] = [ Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []) ] + p[3]
+
+
+def p_attribute_value(p):
+    """
+    attribute_value : STRING
+                    | BOOLEAN
+                    | NUMBER
     """
     if p[3][0] == '"':
-        p[0] = Tree('pug_attribute', '', [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('STRING', p[3], []) ])
+        p[0] = [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('STRING', p[3], []) ]
     elif p[3] == 'true' or p[3] == 'false' :
-        p[0] = Tree('pug_attribute', '', [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('BOOLEAN', p[3], []) ])
+        p[0] = [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('BOOLEAN', p[3], []) ]
     else:
-        p[0] = Tree('pug_attribute', '', [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('NUMBER', p[3], []) ])
+        p[0] = [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), Tree('NUMBER', p[3], []) ]
 
 
 def p_content(p):
@@ -110,9 +151,9 @@ def p_content(p):
             | text
     """
     if len(p) == 3:
-        p[0] = Tree('content1', '', [Tree('EQUALS', p[1], []), p[2]])
+        p[0] = [Tree('EQUALS', p[1], []), p[2]] 
     elif len(p) == 2:
-        p[0] = Tree('content2', '', [p[1]])
+        p[0] = p[1]
 
 def p_interpolation(p):
     """
@@ -120,32 +161,36 @@ def p_interpolation(p):
                   | IDENTIFIER
     """
     if p[1][0] == '"':
-        p[0] = Tree('interpolation1', p[1], [])
+        p[0] = Tree('STRING', p[1], [])
     else:
-        p[0] = Tree('interpolation2', p[1], [])
+        p[0] = Tree('IDENTIFIER', p[1], [])
     
 
 def p_text(p):
     """
     text : text BEGININTERP interpolation ENDINTERP
          | text TEXT
-         | 
+         | BEGININTERP interpolation ENDINTERP
+         | TEXT
     """
     if len(p) == 5:
-        if p[2] == '#{':
-            p[0] = p[1].addSubTree(Tree('text1', '', [Tree('BEGININTERP', p[3], []), p[4], Tree('ENDINTERP', p[5], [])]))
-        else:
-            p[0] = p[1].addSubTree(Tree('TEXT', p[5], []))
+        p[0] = p[1] + [Tree('BEGININTERP', p[3], []), p[4], Tree('ENDINTERP', p[4], [])]
+    elif len(p) == 4:
+        p[0] = [Tree('BEGININTERP', p[1], []), p[2], Tree('ENDINTERP', p[3], [])]
     elif len(p) == 3:
-        p[0] = p[1].addSubTree(Tree('TEXT', p[2], []))
+        p[0] = p[1] + [ Tree('TEXT', p[2], []) ]
     else:
-        p[0] = Tree('text', '', [])
+        p[0] = [ Tree('TEXT', p[2], []) ]
+
+def p_error(p):
+    print("Erro sintático")
+
 
 parser = yacc.yacc(debug=True)
 
 data = """
 - var a = 2.5
-ul
+#user
   li 
     p= a
   li= a
@@ -153,5 +198,6 @@ ul
 
 tree = parser.parse(data)
 
-print(tree.to_html())
+print(tree.print_tree())
+
   
