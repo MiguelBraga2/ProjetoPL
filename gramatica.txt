@@ -4,8 +4,14 @@ lines : lines line
 
 line : tagline
      | JSCODE
-     | COMMENT
+     | comment
      | conditional
+
+comment : COMMENT comment_text
+        | COMMENT
+
+comment_text : comment_text TEXT
+             | TEXT   
 
 conditional : IF CONDITION INDENT lines DEDENT
             | ELSE IF CONDITION INDENT lines DEDENT 
