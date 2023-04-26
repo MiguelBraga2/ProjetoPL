@@ -380,7 +380,7 @@ def t_DOT(t):
     
 
 def t_TEXT(t):
-    r'((?<!\s)[ \t]+[^(\#\{)\n]+|<.*>|(?<=})[ \t]*[^(\#\{)\n]+)'
+    r'((?<!\s)[ \t]+[^\n\#]+((?!(\#\{))\#[^\n\#]+)*|<.*>|(?<=})[ \t]*[^\n\#]+((?!(\#\{))\#[^\n\#]+)*)'
     if t.value.isspace():
         return
     return t
@@ -396,7 +396,7 @@ def t_ignorecomment_TEXT(t):
 
 
 def t_block_TEXT(t):
-    r'[^(\#\{)\n]+'
+    r'[^\n\#]+((?!(\#\{))\#[^\n\#]+)*'
     return t
 
 
@@ -432,15 +432,21 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-- var ola = "jose"
-
-ul
-  ul.class#id.class2
-    li 1
-  li(attr=1) 2
-  li Ola #{ola}! Tudo bem #{ola}?
-  li= ola
-  li 
+html(lang="en")
+  head
+    title= pageTitle
+    script(type='text/javascript').
+      if (foo) bar(1 + 5) #{ola}#{ola}
+  body
+    h1 Pug - node template engine
+    #container.col
+      if youAreUsingPug
+        p You are amazing
+      else
+        p Get on it!
+    p.
+      Pug is a terse and simple templating language with a
+      strong focus on performance and powerful features
 """ 
 
 lexer.input(data)

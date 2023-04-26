@@ -19,6 +19,7 @@ def p_line(p):
     line : tagline
          | JSCODE
          | COMMENT
+         | conditional
     """
     if type(p[1]) == list:
         p[0] = p[1]
@@ -28,12 +29,46 @@ def p_line(p):
         context.execute(p[1]) 
         p[0] = []
 
+def p_conditional(p):
+    """
+    conditional : IF CONDITION INDENT lines DEDENT
+                | ELSE IF CONDITION INDENT lines DEDENT 
+                | ELSE INDENT lines DEDENT
+                | UNLESS CONDITION INDENT lines DEDENT
+                | IF CONDITION
+                | ELSE IF CONDITION 
+                | ELSE
+                | UNLESS CONDITION
+    """
+    pass
+    if p[1] == 'if':
+        if len(p) == 6:
+            p[0] = [ Tree('IF', p[1], []), Tree('CONDITION', p[2], []), Tree('INDENT', p[3], [])] + p[4] + [Tree('DEDENT', p[5], [])]
+        else:
+            p[0] = [ Tree('IF', p[1], []), Tree('CONDITION', p[2], [])]
+    elif p[1] == 'else':
+        if len(p) == 7:
+            p[0] = [ Tree('ELSE', p[1], []), Tree('IF', p[2], []), Tree('CONDITION', p[3], []), Tree('INDENT', p[4], [])] + p[5] + [Tree('DEDENT', p[6], [])]
+        elif len(p) == 5:
+            p[0] = [ Tree('ELSE', p[1], []), Tree('INDENT', p[2], [])] + p[3] + [Tree('DEDENT', p[4], [])]
+        elif len(p) == 4:
+            p[0] = [ Tree('ELSE', p[1], []), Tree('IF', p[2], []), Tree('CONDITION', p[3], [])]
+        else:
+            p[0] = [ Tree('ELSE', p[1], [])]
+    else: 
+        if len(p) == 6:
+            p[0] = [ Tree('UNLESS', p[1], []), Tree('CONDITION', p[2], []), Tree('INDENT', p[3], [])] + p[4] + [Tree('DEDENT', p[5], [])]
+        else:
+            p[0] = [ Tree('UNLESS', p[1], []), Tree('CONDITION', p[2], [])]
+            
+
 def p_tagline(p):
     """
     tagline : tag content INDENT lines DEDENT 
             | tag INDENT lines DEDENT 
             | tag content 
             | tag BAR
+            | tag DOT text
             | tag
     """
     if len(p) == 6:
@@ -41,10 +76,12 @@ def p_tagline(p):
     elif len(p) == 5:
         p[0] = p[1] + [Tree('INDENT', p[2], []), p[3], Tree('DEDENT', p[4], [])]
     elif len(p) == 3: 
-        if p[2] != '/':
-            p[0] = p[1] + p[2]
-        else:
+        if p[2] == '/':
             p[0] = p[1] + [Tree('BAR', p[2], [])]
+        elif p[2] == '.':
+            p[0] = p[1] + [Tree('DOT', p[2], [])] + p[3]
+        else:
+            p[0] = p[1] + p[2]
     else:
         p[0] = p[1]
 
@@ -198,7 +235,7 @@ ul
   ul.class#id.class2
     li 1
   li(attr=1) 2
-  li Ola #{ola}! Tudo bem #{ola}?
+  li Ola #{ola}#{ola}?
   li= ola
   li 
 """ 

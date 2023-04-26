@@ -5,11 +5,22 @@ lines : lines line
 line : tagline
      | JSCODE
      | COMMENT
+     | conditional
+
+conditional : IF CONDITION INDENT lines DEDENT
+            | ELSE IF CONDITION INDENT lines DEDENT 
+            | ELSE INDENT lines DEDENT
+            | UNLESS CONDITION INDENT lines DEDENT
+            | IF CONDITION
+            | ELSE IF CONDITION 
+            | ELSE
+            | UNLESS CONDITION
 
 tagline : tag content INDENT lines DEDENT 
         | tag INDENT lines DEDENT 
         | tag content 
         | tag BAR
+        | tag DOT text
         | tag
 
 tag : TAG attributes 
