@@ -1,0 +1,6 @@
+*.swp
+*.out
+teste.py
+*.txt
+__pycache__/
+parsetab.py

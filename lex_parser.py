@@ -432,21 +432,9 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-html(lang="en")
-  head
-    title= pageTitle
-    script(type='text/javascript').
-      if (foo) bar(1 + 5) #{ola}#{ola}
-  body
-    h1 Pug - node template engine
-    #container.col
-      if youAreUsingPug
-        p You are amazing
-      else
-        p Get on it!
-    p.
-      Pug is a terse and simple templating language with a
-      strong focus on performance and powerful features
+// ola ola
+ ola
+ vole
 """ 
 
 lexer.input(data)
