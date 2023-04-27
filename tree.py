@@ -39,7 +39,11 @@ class Tree:
             string += self.trees[0].to_html()
         
         elif self.type == 'line4':
-            pass # TODO
+            string += self.trees[0].to_html()
+
+        elif self.type == 'conditional':
+            if len(self.trees) == 1:
+                string += self.trees[0].to_html()
 
         elif self.type == 'comment1':
             # comment : COMMENT comment_text

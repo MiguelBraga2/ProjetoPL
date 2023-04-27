@@ -2,6 +2,7 @@ import ply.yacc as yacc
 from lex_parser import tokens, data
 from tree import Tree, context
 
+verified_condition = ""
 
 def p_lines(p):
     """
@@ -13,6 +14,7 @@ def p_lines(p):
         p[0] = p[1].addSubTree(p[2])
     else:
         p[0] = Tree('lines', '', [p[1]])
+    print('')
 
 def p_line(p):
     """
@@ -22,10 +24,11 @@ def p_line(p):
          | conditional
     """
     if isinstance(p[1], Tree):
-        if p[1].type[0] == 't': # tagline
+        if p[1].type.startswith('tagline'): # tagline
             p[0] = Tree('line1', '', [p[1]]) 
         elif p[1].type.startswith('conditional'): # conditional
             p[0] = Tree('line4', '', [p[1]])
+            #print(p[0].to_html())
         elif p[1].type.startswith('comment'): # comment
             p[0] = Tree('line3', '', [p[1]])
     elif isinstance(p[1], str): # JSCODE
@@ -63,7 +66,72 @@ def p_conditional(p):
                 | ELSE
                 | UNLESS CONDITION
     """
-    pass
+    global verified_condition
+
+    if len(p) == 6 and p[1] == 'if ':
+        result = context.eval(p[2])
+        if result == True:
+            p[0] = Tree('conditional', '', [p[4]])
+            verified_condition = p[2]
+        else:
+            p[0] = Tree('conditional', '', [])
+    
+    elif len(p) == 7 and p[1] == 'else ':
+        result = context.eval(p[3])
+        if result == True and p[3] != verified_condition:
+            p[0] = Tree('conditional', '', [p[5]])
+            verified_condition = p[3]
+        else:
+            p[0] = Tree('conditional', '', [])
+    
+    elif len(p) == 5 and p[1] == 'else ':
+        if verified_condition == '':
+            p[0] = Tree('conditional', '', [p[3]])
+        else:
+            verified_condition = ''
+            p[0] = Tree('conditional', '', [])
+
+    elif len(p) == 6 and p[1] == 'unless':
+        result = context.eval(p[2])
+        if result == False:
+            p[0] = Tree('conditional', '', [p[4]])
+            verified_condition = p[2]
+        else:
+            p[0] = Tree('conditional', '', [])
+
+    elif len(p) == 3 and p[1] == 'if ':
+        result = context.eval(p[2])
+        if result == True:
+            p[0] = Tree('conditional', '', [])
+            verified_condition = p[2]
+        else:
+            p[0] = Tree('conditional', '', [])
+
+    elif len(p) == 4 and p[1] == 'else ':
+        result = context.eval(p[3])
+        if result == True and p[3] != verified_condition:
+            p[0] = Tree('conditional', '', [])
+            verified_condition = p[3]
+        else:
+            p[0] = Tree('conditional', '', [])
+
+    elif len(p) == 2 and p[1] == 'else ':
+        if verified_condition == '':
+            p[0] = Tree('conditional', '', [])
+        else:
+            p[0] = Tree('conditional', '', [])
+            verified_condition = ''
+
+    elif len(p) == 3 and p[1] == 'unless':
+        result = context.eval(p[2])
+        if result == False:
+            p[0] = Tree('conditional', '', [])
+            verified_condition = p[2]
+        else:
+            p[0] = Tree('conditional', '', [])
+
+
+    """pass
     if p[1] == 'if':
         if len(p) == 6:
             p[0] = [ Tree('IF', p[1], []), Tree('CONDITION', p[2], []), Tree('INDENT', p[3], [])] + p[4] + [Tree('DEDENT', p[5], [])]
@@ -82,7 +150,7 @@ def p_conditional(p):
         if len(p) == 6:
             p[0] = [ Tree('UNLESS', p[1], []), Tree('CONDITION', p[2], []), Tree('INDENT', p[3], [])] + p[4] + [Tree('DEDENT', p[5], [])]
         else:
-            p[0] = [ Tree('UNLESS', p[1], []), Tree('CONDITION', p[2], [])]
+            p[0] = [ Tree('UNLESS', p[1], []), Tree('CONDITION', p[2], [])]"""
             
 
 def p_tagline(p):

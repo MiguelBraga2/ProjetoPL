@@ -347,7 +347,7 @@ def t_ELSE(t):
     return t
 
 
-def t_unless(t):
+def t_UNLESS(t):
     r'unless'
     t.lexer.begin('conditional')
     return t
@@ -432,9 +432,8 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-// ola ola
- ola
- vole
+unless 1+1==3
+    p ola
 """ 
 
 lexer.input(data)
