@@ -22,6 +22,7 @@ def p_line(p):
          | JSCODE
          | comment
          | conditional
+         | iteration
     """
     if isinstance(p[1], Tree):
         if p[1].type.startswith('tagline'): # tagline
@@ -31,6 +32,8 @@ def p_line(p):
             #print(p[0].to_html())
         elif p[1].type.startswith('comment'): # comment
             p[0] = Tree('line3', '', [p[1]])
+        elif p[1].type.startswith('iteration'): # iteration
+            pass # TODO
     elif isinstance(p[1], str): # JSCODE
         context.execute(p[1])
         p[0] = Tree('line2', '', [Tree('JSCODE', p[1], [])])
@@ -130,28 +133,22 @@ def p_conditional(p):
         else:
             p[0] = Tree('conditional', '', [])
 
+def p_iteration(p):
+    """
+    iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
+    """
+    if len(p) == 8: # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
+        context.execute('x=' + p[4])
+        e = context.eval('x')
 
-    """pass
-    if p[1] == 'if':
-        if len(p) == 6:
-            p[0] = [ Tree('IF', p[1], []), Tree('CONDITION', p[2], []), Tree('INDENT', p[3], [])] + p[4] + [Tree('DEDENT', p[5], [])]
-        else:
-            p[0] = [ Tree('IF', p[1], []), Tree('CONDITION', p[2], [])]
-    elif p[1] == 'else':
-        if len(p) == 7:
-            p[0] = [ Tree('ELSE', p[1], []), Tree('IF', p[2], []), Tree('CONDITION', p[3], []), Tree('INDENT', p[4], [])] + p[5] + [Tree('DEDENT', p[6], [])]
-        elif len(p) == 5:
-            p[0] = [ Tree('ELSE', p[1], []), Tree('INDENT', p[2], [])] + p[3] + [Tree('DEDENT', p[4], [])]
-        elif len(p) == 4:
-            p[0] = [ Tree('ELSE', p[1], []), Tree('IF', p[2], []), Tree('CONDITION', p[3], [])]
-        else:
-            p[0] = [ Tree('ELSE', p[1], [])]
-    else: 
-        if len(p) == 6:
-            p[0] = [ Tree('UNLESS', p[1], []), Tree('CONDITION', p[2], []), Tree('INDENT', p[3], [])] + p[4] + [Tree('DEDENT', p[5], [])]
-        else:
-            p[0] = [ Tree('UNLESS', p[1], []), Tree('CONDITION', p[2], [])]"""
-            
+        r = Tree('iteration', '', [])
+
+        for val in e:
+            string = p[1] + '=' + val
+            context.execute(p[1] + '=' + val)
+            r.addSubTree(p[6])
+        
+        p[0] = r
 
 def p_tagline(p):
     """
@@ -172,7 +169,7 @@ def p_tagline(p):
         else: # tag content
             p[0] = Tree('tagline3', '', [p[1], p[2]])
     elif len(p) == 4: # tag DOT text
-        p[0] = Tree('tagline5', '', [p[1], Tree('DOT', p[2], []), p[3]])
+        p[0] = Tree('tagline5', '', [p[1], p[3]])
     else: # tag
         p[0] = Tree('tagline6', '', [p[1]])
 

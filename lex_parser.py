@@ -432,8 +432,9 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-unless 1+1==3
-    p ola
+ul
+  each val in [1, 2, 3, 4, 5]
+    li= val
 """ 
 
 lexer.input(data)

@@ -39,11 +39,18 @@ class Tree:
             string += self.trees[0].to_html()
         
         elif self.type == 'line4':
+            # line : conditional
             string += self.trees[0].to_html()
 
         elif self.type == 'conditional':
+            # conditional : <lines>
             if len(self.trees) == 1:
                 string += self.trees[0].to_html()
+
+        elif self.type == 'iteration':
+            # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
+            for subtree in self.trees:
+                string += subtree.to_html()
 
         elif self.type == 'comment1':
             # comment : COMMENT comment_text
@@ -82,7 +89,8 @@ class Tree:
             string += '<' + self.trees[0].to_html() + '/>'
        
         elif self.type == 'tagline5':
-            pass # TODO
+            # tagline : tag <DOT> text (DOT is not in the tree)
+            string += '<' + self.trees[0].to_html() + '>' + self.trees[1].to_html() + '</' + currentTag + '>' 
 
         elif self.type == 'tagline6': 
             # tagline : tag

@@ -6,6 +6,7 @@ line : tagline
      | JSCODE
      | comment
      | conditional
+     | iteration
 
 comment : COMMENT comment_text
         | COMMENT
@@ -21,6 +22,8 @@ conditional : IF CONDITION INDENT lines DEDENT
             | ELSE IF CONDITION 
             | ELSE
             | UNLESS CONDITION
+
+iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
 
 tagline : tag content INDENT lines DEDENT 
         | tag INDENT lines DEDENT 
