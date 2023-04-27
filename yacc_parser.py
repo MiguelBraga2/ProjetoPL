@@ -14,7 +14,7 @@ def p_lines(p):
         p[0] = p[1].addSubTree(p[2])
     else:
         p[0] = Tree('lines', '', [p[1]])
-    print('')
+
 
 def p_line(p):
     """
