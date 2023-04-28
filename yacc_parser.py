@@ -9,7 +9,6 @@ def p_lines(p):
     lines : lines line
           | line
     """
-
     if len(p) == 3: # lines (line1 line2 ...)
         p[0] = p[1].addSubTree(p[2])
     else:
@@ -93,7 +92,7 @@ def p_conditional(p):
         else:
             p[0] = Tree('conditional', '', [])
     
-    elif len(p) == 5 and p[1] == 'else\n':
+    elif len(p) == 5 and p[1] == 'else':
         if verified_condition == '':
             p[0] = Tree('conditional', '', [p[3]])
         else:
@@ -133,7 +132,7 @@ def p_conditional(p):
         else:
             p[0] = Tree('conditional', '', [])
 
-    elif len(p) == 2 and p[1] == 'else ':
+    elif len(p) == 2 and p[1] == 'else':
         if verified_condition == '':
             p[0] = Tree('conditional', '', [])
         else:

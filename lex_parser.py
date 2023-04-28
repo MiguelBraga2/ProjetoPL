@@ -343,7 +343,7 @@ def t_conditional_CONDITION(t):
 
 
 def t_ELSE(t):
-    r'else\s'
+    r'else\b'
     return t
 
 
@@ -383,6 +383,8 @@ def t_TEXT(t):
     r'((?<!\s)[ \t]+[^\n\#]+((?!(\#\{))\#[^\n\#]+)*|<.*>|(?<=})[ \t]*[^\n\#]+((?!(\#\{))\#[^\n\#]+)*)'
     if t.value.isspace():
         return
+    elif t.value[0] == ' ':
+        t.value = t.value[1:]
     return t
 
 
@@ -442,6 +444,8 @@ html(lang="en")
     #container.col
       if youAreUsingPug
         p You are amazing
+      else    
+        p No, you not
       p.
         Pug is a terse and simple templating language with a
         strong focus on performance and powerful features
