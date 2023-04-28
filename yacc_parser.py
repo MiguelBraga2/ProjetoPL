@@ -72,7 +72,10 @@ def p_conditional(p):
     global verified_condition
 
     if len(p) == 6 and p[1] == 'if ':
-        result = context.eval(p[2])
+        try:
+            result = context.eval(p[2])
+        except:
+            result = False
         if result == True:
             p[0] = Tree('conditional', '', [p[4]])
             verified_condition = p[2]
@@ -80,14 +83,17 @@ def p_conditional(p):
             p[0] = Tree('conditional', '', [])
     
     elif len(p) == 7 and p[1] == 'else ':
-        result = context.eval(p[3])
+        try:
+            result = context.eval(p[2])
+        except:
+            result = False
         if result == True and p[3] != verified_condition:
             p[0] = Tree('conditional', '', [p[5]])
             verified_condition = p[3]
         else:
             p[0] = Tree('conditional', '', [])
     
-    elif len(p) == 5 and p[1] == 'else ':
+    elif len(p) == 5 and p[1] == 'else\n':
         if verified_condition == '':
             p[0] = Tree('conditional', '', [p[3]])
         else:
@@ -95,7 +101,10 @@ def p_conditional(p):
             p[0] = Tree('conditional', '', [])
 
     elif len(p) == 6 and p[1] == 'unless':
-        result = context.eval(p[2])
+        try:
+            result = context.eval(p[2])
+        except:
+            result = True
         if result == False:
             p[0] = Tree('conditional', '', [p[4]])
             verified_condition = p[2]
@@ -103,7 +112,10 @@ def p_conditional(p):
             p[0] = Tree('conditional', '', [])
 
     elif len(p) == 3 and p[1] == 'if ':
-        result = context.eval(p[2])
+        try:
+            result = context.eval(p[2])
+        except:
+            result = False
         if result == True:
             p[0] = Tree('conditional', '', [])
             verified_condition = p[2]
@@ -111,7 +123,10 @@ def p_conditional(p):
             p[0] = Tree('conditional', '', [])
 
     elif len(p) == 4 and p[1] == 'else ':
-        result = context.eval(p[3])
+        try:
+            result = context.eval(p[2])
+        except:
+            result = False
         if result == True and p[3] != verified_condition:
             p[0] = Tree('conditional', '', [])
             verified_condition = p[3]
@@ -126,7 +141,10 @@ def p_conditional(p):
             verified_condition = ''
 
     elif len(p) == 3 and p[1] == 'unless':
-        result = context.eval(p[2])
+        try:
+            result = context.eval(p[2])
+        except:
+            result = True
         if result == False:
             p[0] = Tree('conditional', '', [])
             verified_condition = p[2]
@@ -291,8 +309,11 @@ def p_interpolation(p):
     elif p[1][0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']: # NUMBER
         p[0] = Tree('interpolation3', '', [Tree('NUMBER', p[1], [])])
     else: # IDENTIFIER
-        p[0] = Tree('interpolation2', '', [Tree('IDENTIFIER', context.eval(p[1]), [])])
-        
+        try:
+            val = context.eval(p[1])
+        except:
+            val = ""
+        p[0] = Tree('interpolation2', '', [Tree('IDENTIFIER', val, [])])
     
 
 def p_text(p):
@@ -320,7 +341,5 @@ parser = yacc.yacc(debug=True)
 tree = parser.parse(data)
 
 string = tree.to_html()
-string = string[:-1]
-print(string, end='')
-
-  
+string = string[1:]
+print(string)
