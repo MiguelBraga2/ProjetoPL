@@ -22,6 +22,7 @@ def p_line(p):
          | comment
          | conditional
          | iteration
+         | case
     """
     if isinstance(p[1], Tree):
         if p[1].type.startswith('tagline'): # tagline
@@ -36,6 +37,14 @@ def p_line(p):
     elif isinstance(p[1], str): # JSCODE
         context.execute(p[1])
         p[0] = Tree('line2', '', [Tree('JSCODE', p[1], [])])
+
+def p_case(p): 
+    """    
+    case : CASE JSCODE INDENT lines DEDENT
+         | WHEN JSCODE INDENT lines DEDENT
+         | DEFAULT INDENT lines DEDENT    
+    """
+
 
 def p_comment(p):
     """

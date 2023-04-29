@@ -7,6 +7,11 @@ line : tagline
      | comment
      | conditional
      | iteration
+     | case
+
+case : CASE JSCODE INDENT lines DEDENT
+     | WHEN JSCODE INDENT lines DEDENT
+     | DEFAULT INDENT lines DEDENT    
 
 comment : COMMENT comment_text
         | COMMENT
@@ -66,6 +71,7 @@ content : EQUALS interpolation
 
 interpolation : VARIABLE
               | STRING 
+              | NUMBER
 
 text : text BEGININTERP interpolation ENDINTERP
      | text TEXT
