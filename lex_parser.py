@@ -430,8 +430,12 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-each val in [1,3,4,5]
-  p ola 
+- var ola = "ola"
+case ola
+  when "ola"
+    p ola manos
+  default
+    p xau
 """ 
 
 lexer.input(data)

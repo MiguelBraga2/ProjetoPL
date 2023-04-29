@@ -22,29 +22,58 @@ def p_line(p):
          | comment
          | conditional
          | iteration
-         | case
+         | switch
     """
     if isinstance(p[1], Tree):
         if p[1].type.startswith('tagline'): # tagline
             p[0] = Tree('line1', '', [p[1]]) 
-        elif p[1].type.startswith('conditional'): # conditional
-            p[0] = Tree('line4', '', [p[1]])
-            #print(p[0].to_html())
         elif p[1].type.startswith('comment'): # comment
             p[0] = Tree('line3', '', [p[1]])
+        elif p[1].type.startswith('conditional'): # conditional
+            p[0] = Tree('line4', '', [p[1]])
         elif p[1].type.startswith('iteration'): # iteration
-            pass # TODO
-    elif isinstance(p[1], str): # JSCODE
+            p[0] = Tree('line5', '', [p[1]])
+        elif p[1].type == ('switch'): # case
+            p[0] = Tree('line6', '', [p[1]]) 
+    elif isinstance(p[1], str): # JSCODE 
         context.execute(p[1])
         p[0] = Tree('line2', '', [Tree('JSCODE', p[1], [])])
 
+
+def p_switch(p):
+    """
+    switch : CASE CONDITION INDENT casesdefault DEDENT
+    """
+    p[0] = Tree('switch', '', [Tree('CONDITION', p[2], []), Tree('INDENT', p[3], []), p[4]])
+
+def p_casesdefault(p):
+    """
+    casesdefault : cases DEFAULT INDENT lines DEDENT
+                 | cases
+                 | DEFAULT INDENT lines DEDENT
+    """
+    if len(p) == 6:
+        p[0] = Tree('casesdefault1', '', [ p[1], p[4] ])
+    elif len(p) == 2:
+        p[0] = Tree('casesdefault2', '', [ p[1] ])
+    else:
+        p[0] = Tree('casesdefault3', '', [ p[3] ])
+
+def p_cases(p):
+    """
+    cases : cases case 
+          | case 
+    """
+    if len(p) == 3:
+        p[0] = p[1].addSubTree(p[2])
+    else:   
+        p[0] = Tree('cases', '', [ p[1] ])
+
 def p_case(p): 
     """    
-    case : CASE JSCODE INDENT lines DEDENT
-         | WHEN JSCODE INDENT lines DEDENT
-         | DEFAULT INDENT lines DEDENT    
+    case : WHEN CONDITION INDENT lines DEDENT
     """
-
+    p[0] = Tree('case', '', [Tree('CONDITION', p[2], []), p[4]])
 
 def p_comment(p):
     """
@@ -347,6 +376,7 @@ def p_error(p):
 parser = yacc.yacc(debug=True)
 
 tree = parser.parse(data)
+
 
 string = tree.to_html()
 string = string[1:]

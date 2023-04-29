@@ -17,7 +17,7 @@ class Tree:
             tree.print_tree()
         print(')',end='')
 
-    def to_html(self, indentation="\n"):
+    def to_html(self, indentation="\n", condition=""):
         global currentTag
         global classes
         string = ""
@@ -41,6 +41,10 @@ class Tree:
         elif self.type == 'line4':
             # line : conditional
             string += self.trees[0].to_html(indentation)
+        
+        elif self.type == 'line6':
+                    # line : conditional
+                    string += self.trees[0].to_html(indentation)
 
         elif self.type == 'conditional':
             # conditional : <lines>
@@ -204,6 +208,38 @@ class Tree:
             for subtree in self.trees:
                 string += indentation + subtree.value
         
+        elif self.type == 'switch':
+            # switch : CASE CONDITION INDENT casesdefault DEDENT
+            cond = self.trees[0].value
+            string += self.trees[2].to_html(self.trees[1].value, cond)
+
+        elif self.type == 'casesdefault1':
+            default = self.trees[1]
+            
+            result = False
+
+            for tree in self.trees[0].trees:
+                result = context.eval(condition + ' == ' + tree.trees[0].value)
+                if result:
+                    string += tree.trees[1].to_html(indentation)
+                    break
+            
+            if not result:
+                string += default.to_html(indentation)
+
+        elif self.type == 'casesdefault2':
+            for tree in self.trees[0].trees:
+                result = context.execute(condition + ' == ' + tree.trees[0].value)
+                if result:
+                    string += tree.trees[1].to_html(indentation)
+                    break
+
+        elif self.type == 'casesdefault3':
+            string += self.trees[0].to_html(indentation)
+
+
+    
+
         return string
 
     def addSubTree(self, tree):
