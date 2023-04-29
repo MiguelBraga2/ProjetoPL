@@ -30,7 +30,7 @@ tokens = (
     'CONDITION',
     'WHILE',
     'EACH',
-    'IN'
+    'IN',
     'WHEN',
     'DEFAULT',
     'CASE'
