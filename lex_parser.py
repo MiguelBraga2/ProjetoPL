@@ -33,10 +33,9 @@ tokens = (
     'WHILE',
     'EACH',
     'IN'
-        # 'WHEN',
-        # 'DEFAULT',
-        # 'CASE',
-        # 'MIXIN',
+    'WHEN',
+    'DEFAULT',
+    'CASE'
 )
 
 
@@ -48,7 +47,7 @@ states = (
     ('comment', 'exclusive'),
     ('block', 'exclusive'),
     ('conditional', 'exclusive'),
-    ('iteration', 'exclusive')
+    ('iteration', 'exclusive'),
 )
 
 # Function to get indentation level 
@@ -66,15 +65,13 @@ def indetation_level(line):
 def t_INITIAL_indentation(t):
     r'\n[ \t]*'
 
-    # increment the line number
-    t.lexer.lineno += 1 
-
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
 
     previous_indentation = t.lexer.indent_stack[-1]
 
     if previous_indentation == current_indentation:
+        t.lexer.lineno += 1 
         return 
     
     elif previous_indentation > current_indentation:
@@ -83,10 +80,13 @@ def t_INITIAL_indentation(t):
             t.lexer.skip(-len(t.value))
         elif t.lexer.indent_stack[-1] < current_indentation:
             raise ValueError('Indententation error')
+        else:
+            t.lexer.lineno += 1 
         t.type = 'DEDENT'
         return t
     
     else:
+        t.lexer.lineno += 1 
         t.lexer.indent_stack.append(current_indentation)
         t.type = 'INDENT'
         return t
@@ -325,13 +325,26 @@ def t_iteration_IDENTIFIER(t):
     return t
 
 def t_IF(t):
-    r'if\s'
+    r'(?<=else)\sif\b|if\b'
     t.lexer.begin('conditional')
     return t
 
+def t_CASE(t):
+    r'case\b'
+    t.lexer.begin('conditional')
+    return t
+
+def t_WHEN(t):
+    r'when\b'
+    t.lexer.begin('conditional')
+    return t
+
+def t_DEFAULT(t):
+    r'default\b'
+    return t
 
 def t_WHILE(t):
-    r'while\s'
+    r'while\b'
     t.lexer.begin('conditional')
     return t
 
@@ -442,13 +455,10 @@ html(lang="en")
   body
     h1 Pug - node template engine
     #container.col
-      if youAreUsingPug
-        p You are amazing
-      else    
-        p No, you not
-      p.
-        Pug is a terse and simple templating language with a
-        strong focus on performance and powerful features
+      case youAreUsingPug
+        when 1
+        when 2
+        default
 """ 
 
 lexer.input(data)
