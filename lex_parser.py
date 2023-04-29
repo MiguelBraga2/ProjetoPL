@@ -13,8 +13,6 @@ tokens = (
     'RPAREN',
     'COMMA',
     'EQUALS',
-    'DOISPONTOS',
-    'QUESTIONMARK',
     'BOOLEAN',
     'STRING',
     'IGNORECOMMENT',
@@ -36,6 +34,7 @@ tokens = (
     'WHEN',
     'DEFAULT',
     'CASE'
+    # falta dois pontos e |
 )
 
 
@@ -67,7 +66,7 @@ def t_INITIAL_indentation(t):
 
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
-
+    # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
     if previous_indentation == current_indentation:
@@ -98,7 +97,7 @@ def t_ignorecomment_indentation(t):
 
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
-
+    # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
     
     if previous_indentation == current_indentation:
@@ -120,7 +119,7 @@ def t_comment_indentation(t):
 
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
-
+    # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
     if previous_indentation == current_indentation:
@@ -147,6 +146,7 @@ def t_comment_indentation(t):
                 return
             else:
                 nc += 1
+        # Para controlar os whitespaces
 
 
 
@@ -156,7 +156,7 @@ def t_block_indentation(t): # Rever
 
     # get the indentation level
     current_indentation = indetation_level(t.value[1:])
-
+    # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
     if previous_indentation == current_indentation:
@@ -169,20 +169,7 @@ def t_block_indentation(t): # Rever
         return 
     else:
         t.lexer.lineno += 1
-        aux = current_indentation
-        nc = 0
-
-        for i in range(len(t.value)-1):
-            if t.value[-i-1] == '\t':
-                aux -= 4
-            else:
-                aux -= 1
-            
-            if aux == previous_indentation:
-                t.lexer.skip(-nc)
-                return
-            else:
-                nc += 1
+        # sempres dois espaços antes do texto do block
 
 
 def t_LPAREN(t):
@@ -199,16 +186,6 @@ def t_attributes_ATTRIBUTENAME(t):
 def t_attributes_EQUALS(t):
     r'\='
     t.lexer.push_state('assign')
-    return t
-
-
-def t_attributes_QUESTIONMARK(t):
-    r'\?'
-    return t
-
-
-def t_attributes_DOISPONTOS(t):
-    r'\:'
     return t
 
 
@@ -246,13 +223,17 @@ def t_EQUALS(t):
     t.lexer.push_state('assign')
     return t
 
+
 def t_JSCODE(t):
     r'\-.*'
     t.value = t.value[1:]
     return t
 
+
+# ASSIGN
 def t_assign_BOOLEAN(t):
     r'(true|else)'
+    t.lexer.pop_state()
     return t
 
 def t_assign_NUMBER(t):
@@ -267,16 +248,21 @@ def t_assign_IDENTIFIER(t):
 
 def t_assign_STYLE(t):
     r'\{[^\}]*\}'
+    t.value = t.value.replace(" ", "")
+    t.value = t.value.replace(",", ";")
+    t.value = t.value.replace("'", "")
+    t.value = t.value.replace("\"", "")
+    t.value = t.value[:-1] + ';}'
     t.lexer.pop_state()
     return t
-
 
 def t_assign_STRING(t):
     r'\'[^\']*\'|"[^\"]*"'
     t.lexer.pop_state()
     return t
- 
 
+
+# INTERPOLATION
 def t_BEGININTERP(t):
     r'\#\{'
     t.lexer.push_state('interpolation')
@@ -300,24 +286,24 @@ def t_interpolation_ENDINTERP(t):
     t.lexer.pop_state()
     return t
 
+
+# ITERATION
 def t_EACH(t):
-    r'each\s'
+    r'each\b'
     t.lexer.begin('iteration')
     return t
-
 
 def t_iteration_JSCODE(t):
     r'(?<=(in\s)).*'
     t.lexer.begin('INITIAL')
     return t 
 
-
 def t_iteration_COMMA(t):
     r','
     return t
 
 def t_iteration_IN(t):
-    r'in\s'
+    r'in\b'
     return t
 
 def t_iteration_IDENTIFIER(t):
@@ -359,9 +345,8 @@ def t_ELSE(t):
     r'else\b'
     return t
 
-
 def t_UNLESS(t):
-    r'unless'
+    r'unless\b'
     t.lexer.begin('conditional')
     return t
 
@@ -393,11 +378,9 @@ def t_DOT(t):
     
 
 def t_TEXT(t):
-    r'((?<!\s)[ \t]+[^\n\#]+((?!(\#\{))\#[^\n\#]+)*|<.*>|(?<=})[ \t]*[^\n\#]+((?!(\#\{))\#[^\n\#]+)*)'
+    r'((?<!\s)[ \t]+[^\n\#]+((?!(\#\{))\#[^\n\#]+)*|<.*>|(?<=})[^\n\#]+((?!(\#\{))\#[^\n\#]+)*)'
     if t.value.isspace():
         return
-    elif t.value[0] == ' ':
-        t.value = t.value[1:]
     return t
 
 
@@ -447,18 +430,8 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-html(lang="en")
-  head
-    title= pageTitle
-    script(type='text/javascript').
-      if (foo) bar(1 + 5)
-  body
-    h1 Pug - node template engine
-    #container.col
-      case youAreUsingPug
-        when 1
-        when 2
-        default
+each val in [1,3,4,5]
+  p ola 
 """ 
 
 lexer.input(data)
