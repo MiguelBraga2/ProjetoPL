@@ -41,11 +41,12 @@ conditional_middle : conditional_middle ELSE IF INDENT lines DEDENT
                    | ELSE IF INDENT lines DEDENT 
                    | ELSE IF 
 
-conditional_final : ELSE INDENT LINES DEDENT
+conditional_final : ELSE INDENT lines DEDENT
                   | ELSE 
 
 
 iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
+          | EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
 
 tagline : tag content INDENT lines DEDENT 
         | tag INDENT lines DEDENT 

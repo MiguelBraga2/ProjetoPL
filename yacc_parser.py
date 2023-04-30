@@ -159,19 +159,13 @@ def p_conditional_final(p):
 def p_iteration(p):
     """
     iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
+              | EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
     """
-    if len(p) == 8: # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
-        context.execute('x=' + p[4])
-        e = context.eval('x')
+    if len(p) == 8:
+        p[0] = Tree('iteration1', '', [Tree('IDENTIFIER', p[2], []), Tree('JSCODE', p[4], []), Tree('INDENT', p[5], []), p[6], Tree('DEDENT', p[7], [])])
+    else:
+        p[0] = Tree('iteration2', '', [Tree('IDENTIFIER', p[2], []), Tree('IDENTIFIER', p[4], []), Tree('JSCODE', p[6], []), Tree('INDENT', p[7], []), p[8], Tree('DEDENT', p[9], [])])
 
-        r = Tree('iteration', '', [])
-
-        for val in e:
-            string = p[1] + '=' + val
-            context.execute(p[1] + '=' + val)
-            r.addSubTree(p[6])
-        
-        p[0] = r
 
 def p_tagline(p):
     """
@@ -314,11 +308,7 @@ def p_interpolation(p):
     elif p[1][0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']: # NUMBER
         p[0] = Tree('interpolation3', '', [Tree('NUMBER', p[1], [])])
     else: # IDENTIFIER
-        try:
-            val = context.eval(p[1])
-        except:
-            val = ""
-        p[0] = Tree('interpolation2', '', [Tree('IDENTIFIER', val, [])])
+        p[0] = Tree('interpolation2', '', [Tree('IDENTIFIER', p[1], [])])
     
 
 def p_text(p):

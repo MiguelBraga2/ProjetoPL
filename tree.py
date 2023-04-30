@@ -42,6 +42,10 @@ class Tree:
             # line : conditional
             string += self.trees[0].to_html(indentation)
         
+        elif self.type == 'line5':
+            # line : iteration
+            string += self.trees[0].to_html(indentation)
+        
         elif self.type == 'line6':
             # line : case
             string += self.trees[0].to_html(indentation)
@@ -124,10 +128,22 @@ class Tree:
             elif begin.type == 'conditional_begin4' and not result:
                 pass
             
-        elif self.type == 'iteration':
+        elif self.type == 'iteration1':
             # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
-            for subtree in self.trees:
-                string += subtree.to_html(indentation)
+            context.execute('iteration1 = ' + self.trees[1].value)
+            iterator = context.eval('iteration1')
+            for val in iterator:
+                context.execute(self.trees[0].value + ' = ' + str(val))
+                string += self.trees[3].to_html(indentation)
+
+        elif self.type == 'iteration2':
+            # iteration : EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
+            context.execute('iteration2 = ' + self.trees[2].value)
+            iterator = context.eval('iteration2')
+            for val in iterator:
+                context.execute(self.trees[0].value + ' = ' + val)
+                context.execute(self.trees[1].value + ' = ' + 'iteration2[' + str(val) + ']')
+                string += self.trees[4].to_html(indentation)
 
         elif self.type == 'comment1':
             # comment : COMMENT comment_text
@@ -144,7 +160,7 @@ class Tree:
 
         elif self.type == 'tagline1': 
             # tagline : tag content INDENT lines DEDENT 
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation)[1:] + '\n' + \
+            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation) + '\n' + \
                             self.trees[3].to_html(indentation = self.trees[2].value)
             self.trees[0].to_html(indentation) # to update the currentTag
             string += indentation + '</' + currentTag + '>'
@@ -159,7 +175,7 @@ class Tree:
         
         elif self.type == 'tagline3':
             # tagline : tag content
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation)[1:] + '</' + currentTag + '>' 
+            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation) + '</' + currentTag + '>' 
         
         elif self.type == 'tagline4': 
             # tagline : tag BAR
@@ -270,7 +286,11 @@ class Tree:
         
         elif self.type == 'interpolation2':
             # interpolation : IDENTIFIER
-            string += str(self.trees[0].value)
+            try:
+                result = str(context.eval(self.trees[0].value))
+            except:
+                result = ''
+            string += result
         
         elif self.type == 'interpolation3':
             # # interpolation : NUMBER

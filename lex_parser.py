@@ -445,13 +445,10 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-- var authorised = "ola"
-if authorised == "adeus"
-  p You're logged
-else if authorised == "ola"
-  p Meio
-else
-  p You're not logged
+ul
+  each val, obj in {1: "ola", 2: "manos"}
+    li= val
+    li= obj
 """ 
 
 lexer.input(data)
