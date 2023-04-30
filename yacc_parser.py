@@ -23,16 +23,7 @@ def p_line(p):
          | switch
     """
     if isinstance(p[1], Tree):
-        if p[1].type.startswith('tagline'): # tagline
-            p[0] = Tree('line1', '', [p[1]]) 
-        elif p[1].type.startswith('comment'): # comment
-            p[0] = Tree('line3', '', [p[1]])
-        elif p[1].type.startswith('conditional'): # conditional
-            p[0] = Tree('line4', '', [p[1]])
-        elif p[1].type.startswith('iteration'): # iteration
-            p[0] = Tree('line5', '', [p[1]])
-        elif p[1].type == ('switch'): # case
-            p[0] = Tree('line6', '', [p[1]]) 
+        p[0] = Tree('line1', '', [p[1]]) 
     elif isinstance(p[1], str): # JSCODE 
         p[0] = Tree('line2', '', [Tree('JSCODE', p[1], [])])
 

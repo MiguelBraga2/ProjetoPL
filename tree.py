@@ -34,22 +34,6 @@ class Tree:
         elif self.type == 'line2':
             context.execute(self.trees[0].value)
         
-        elif self.type == 'line3': 
-            # line : comment
-            string += self.trees[0].to_html(indentation)
-        
-        elif self.type == 'line4':
-            # line : conditional
-            string += self.trees[0].to_html(indentation)
-        
-        elif self.type == 'line5':
-            # line : iteration
-            string += self.trees[0].to_html(indentation)
-        
-        elif self.type == 'line6':
-            # line : case
-            string += self.trees[0].to_html(indentation)
-
         elif self.type == 'conditional1':
             # conditional : conditional_begin conditional_middle conditional_final
             begin = self.trees[0]
@@ -83,8 +67,8 @@ class Tree:
                         string += self.trees[2].trees[1].to_html(indentation)
 
         elif self.type == 'conditional2':
-            # conditional_begin conditional_final
-            # conditional_begin conditional_middle 
+            # conditional : conditional_begin conditional_final
+            #             | conditional_begin conditional_middle 
             begin = self.trees[0]
             try:
                 result = context.eval(begin.trees[0].value)
@@ -174,8 +158,7 @@ class Tree:
             string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + \
                             self.trees[2].to_html(indentation = self.trees[1].value)
             self.trees[0].to_html(indentation) # to update the currentTag
-            string += indentation + '</' + currentTag + '>'
-                            
+            string += indentation + '</' + currentTag + '>'                  
         
         elif self.type == 'tagline3':
             # tagline : tag content
@@ -333,9 +316,6 @@ class Tree:
 
         elif self.type == 'casesdefault3':
             string += self.trees[0].to_html(indentation)
-
-
-    
 
         return string
 
