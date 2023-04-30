@@ -1,6 +1,6 @@
 import ply.yacc as yacc
 from lex_parser import tokens, data
-from tree import Tree, context
+from tree import Tree
 
 def p_lines(p):
     """
