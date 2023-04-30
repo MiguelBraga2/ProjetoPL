@@ -26,14 +26,24 @@ comment : COMMENT comment_text
 comment_text : comment_text TEXT
              | TEXT   
 
-conditional : IF CONDITION INDENT lines DEDENT
-            | ELSE IF CONDITION INDENT lines DEDENT 
-            | ELSE INDENT lines DEDENT
-            | UNLESS CONDITION INDENT lines DEDENT
-            | IF CONDITION
-            | ELSE IF CONDITION 
-            | ELSE
-            | UNLESS CONDITION
+conditional : conditional_begin conditional_middle conditional_final
+            | conditional_begin conditional_final
+            | conditional_begin conditional_middle
+            | conditional_begin
+
+conditional_begin : IF CONDITION INDENT lines DEDENT
+                  | IF CONDITION
+                  | UNLESS CONDITION INDENT lines DEDENT 
+                  | UNLESS CONDITION
+
+conditional_middle : conditional_middle ELSE IF INDENT lines DEDENT 
+                   | conditional_middle ELSE IF 
+                   | ELSE IF INDENT lines DEDENT 
+                   | ELSE IF 
+
+conditional_final : ELSE INDENT LINES DEDENT
+                  | ELSE 
+
 
 iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
 

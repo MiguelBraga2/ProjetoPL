@@ -43,14 +43,87 @@ class Tree:
             string += self.trees[0].to_html(indentation)
         
         elif self.type == 'line6':
-                    # line : conditional
-                    string += self.trees[0].to_html(indentation)
+            # line : case
+            string += self.trees[0].to_html(indentation)
 
-        elif self.type == 'conditional':
-            # conditional : <lines>
-            if len(self.trees) == 1:
-                string += self.trees[0].to_html(indentation)
+        elif self.type == 'conditional1':
+            # conditional : conditional_begin conditional_middle conditional_final
+            begin = self.trees[0]
+            try:
+                result = context.eval(begin.trees[0].value)
+            except:
+                result = False
+            if begin.type == 'conditional_begin1' and result:
+                string += begin.trees[2].to_html(indentation)
+            elif begin.type == 'conditional_begin2' and result:
+                pass
+            elif begin.type == 'conditional_begin3' and not result:
+                string += begin.trees[2].to_html(indentation)
+            elif begin.type == 'conditional_begin4' and not result:
+                pass
+            else: 
+                middle = self.trees[1]
 
+                for tree in middle.trees:
+                    try:
+                        result = context.eval(tree.value)
+                    except: 
+                        pass
+                    if result:
+                        if len(tree.trees) > 0:
+                            string += tree.trees[1].to_html(indentation)
+                        break
+
+                if not result:
+                    if len(self.trees[2].trees) > 0:
+                        string += self.trees[2].trees[1].to_html(indentation)
+
+        elif self.type == 'conditional2':
+            # conditional_begin conditional_final
+            # conditional_begin conditional_middle 
+            begin = self.trees[0]
+            try:
+                result = context.eval(begin.trees[0].value)
+            except:
+                result = False
+            if begin.type == 'conditional_begin1' and result:
+                string += begin.trees[2].to_html(indentation)
+            elif begin.type == 'conditional_begin2' and result:
+                pass
+            elif begin.type == 'conditional_begin3' and not result:
+                string += begin.trees[2].to_html(indentation)
+            elif begin.type == 'conditional_begin4' and not result:
+                pass
+            else: 
+                if self.trees[1].type == 'conditional_middle':
+                    middle = self.trees[1]
+
+                    for tree in middle.trees:
+                        result = context.eval(tree.value)
+                        if result:
+                            if len(tree.trees) > 0:
+                                string += tree.trees[1].to_html(indentation)
+                            break
+                else:
+                    if len(self.trees[1].trees) > 0:
+                        string += self.trees[1].trees[1].to_html(indentation)
+            
+        elif self.type == 'conditional3':
+            # begin
+            begin = self.trees[0]
+            try:
+                result = context.eval(begin.trees[0].value)
+            except:
+                result = False
+            if begin.type == 'conditional_begin1' and result:
+                string += begin.trees[2].to_html(indentation)
+            elif begin.type == 'conditional_begin2' and result:
+                pass
+            elif begin.type == 'conditional_begin3' and not result:
+                string += begin.trees[2].to_html(indentation)
+            elif begin.type == 'conditional_begin4' and not result:
+                pass
+            
         elif self.type == 'iteration':
             # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
             for subtree in self.trees:
@@ -60,7 +133,6 @@ class Tree:
             # comment : COMMENT comment_text
             fst_line = self.trees[0].value[2:]
             lines = [tree.value.replace('\t', '    ') for tree in self.trees[1].trees]
-
             min_spaces = min(len(line) - len(line.lstrip()) for line in lines) if lines else 0
             stripped_lines = [line[min_spaces:] for line in lines]
             indented_lines = [line + '\n' for line in stripped_lines[:-1]] + [stripped_lines[-1]]

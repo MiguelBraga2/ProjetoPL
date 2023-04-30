@@ -169,6 +169,8 @@ def t_block_indentation(t): # Rever
         return 
     else:
         t.lexer.lineno += 1
+        aux = current_indentation
+        nc = 0
 
         for i in range(len(t.value)-1):
             if t.value[-i-1] == '\t':
@@ -443,14 +445,13 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-body
-  //Ola manos
-  //-
-       Comments for your template writers.
-       Use as much text as you want.
-  // Ola manos
-    	Comments for your HTML readers.
-        Use as much text as you want.
+- var authorised = "ola"
+if authorised == "adeus"
+  p You're logged
+else if authorised == "ola"
+  p Meio
+else
+  p You're not logged
 """ 
 
 lexer.input(data)
