@@ -32,7 +32,7 @@ class Tree:
             string += self.trees[0].to_html(indentation) 
 
         elif self.type == 'line2':
-            pass
+            context.execute(self.trees[0].value)
         
         elif self.type == 'line3': 
             # line : comment
@@ -144,7 +144,7 @@ class Tree:
 
         elif self.type == 'tagline1': 
             # tagline : tag content INDENT lines DEDENT 
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation) + '\n' + \
+            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation)[1:] + '\n' + \
                             self.trees[3].to_html(indentation = self.trees[2].value)
             self.trees[0].to_html(indentation) # to update the currentTag
             string += indentation + '</' + currentTag + '>'
@@ -159,7 +159,7 @@ class Tree:
         
         elif self.type == 'tagline3':
             # tagline : tag content
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation) + '</' + currentTag + '>' 
+            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation)[1:] + '</' + currentTag + '>' 
         
         elif self.type == 'tagline4': 
             # tagline : tag BAR

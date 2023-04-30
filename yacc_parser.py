@@ -34,7 +34,6 @@ def p_line(p):
         elif p[1].type == ('switch'): # case
             p[0] = Tree('line6', '', [p[1]]) 
     elif isinstance(p[1], str): # JSCODE 
-        context.execute(p[1])
         p[0] = Tree('line2', '', [Tree('JSCODE', p[1], [])])
 
 
@@ -156,6 +155,7 @@ def p_conditional_final(p):
         p[0] = Tree('conditional_final2', '', [])
 
 
+# ITERATION
 def p_iteration(p):
     """
     iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
