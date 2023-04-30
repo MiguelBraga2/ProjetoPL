@@ -445,10 +445,10 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
+- var values = [];
 ul
-  each val, obj in {1: "ola", 2: "manos"}
+  each val in values.length ? values : ['There are no values']
     li= val
-    li= obj
 """ 
 
 lexer.input(data)

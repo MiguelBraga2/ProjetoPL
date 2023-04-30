@@ -133,7 +133,9 @@ class Tree:
             context.execute('iteration1 = ' + self.trees[1].value)
             iterator = context.eval('iteration1')
             for val in iterator:
-                context.execute(self.trees[0].value + ' = ' + str(val))
+                if type(val) == str:
+                    val = '"' + val + '"'
+                context.execute(self.trees[0].value + '=' + str(val))                  
                 string += self.trees[3].to_html(indentation)
 
         elif self.type == 'iteration2':
@@ -141,6 +143,8 @@ class Tree:
             context.execute('iteration2 = ' + self.trees[2].value)
             iterator = context.eval('iteration2')
             for val in iterator:
+                if type(val) == str:
+                    val = '"' + val + '"'
                 context.execute(self.trees[0].value + ' = ' + val)
                 context.execute(self.trees[1].value + ' = ' + 'iteration2[' + str(val) + ']')
                 string += self.trees[4].to_html(indentation)
