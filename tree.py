@@ -58,17 +58,18 @@ class Tree:
 
         elif self.type == 'comment1':
             # comment : COMMENT comment_text
-            string += "<!-- " + self.trees[0].value +  + self.trees[1].to_html(indentation) + "-->"
+            fst_line = self.trees[0].value[2:]
+            lines = [tree.value.replace('\t', '    ') for tree in self.trees[1].trees]
+
+            min_spaces = min(len(line) - len(line.lstrip()) for line in lines) if lines else 0
+            stripped_lines = [line[min_spaces:] for line in lines]
+            indented_lines = [line + '\n' for line in stripped_lines[:-1]] + [stripped_lines[-1]]
+            string += f"{indentation}<!--{fst_line}{''.join(indented_lines)}-->"
         
         elif self.type == 'comment2':
             # comment : COMMENT
-            string += "<!-- " + self.trees[0].value + "-->"
+            string += f"{indentation}<!--{self.trees[0].value[2:]}-->"
 
-        elif self.type == 'comment_text':
-            # comment_text : TEXT TEXT ...
-            for subtree in self.trees:
-                string += indentation + subtree.value
-        
         elif self.type == 'tagline1': 
             # tagline : tag content INDENT lines DEDENT 
             string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation) + '\n' + \

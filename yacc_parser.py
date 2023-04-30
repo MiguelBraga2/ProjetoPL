@@ -40,6 +40,7 @@ def p_line(p):
         p[0] = Tree('line2', '', [Tree('JSCODE', p[1], [])])
 
 
+# SWITCH CASE
 def p_switch(p):
     """
     switch : CASE CONDITION INDENT casesdefault DEDENT
@@ -75,6 +76,8 @@ def p_case(p):
     """
     p[0] = Tree('case', '', [Tree('CONDITION', p[2], []), p[4]])
 
+
+# Comment
 def p_comment(p):
     """
     comment : COMMENT comment_text
@@ -94,6 +97,8 @@ def p_comment_text(p):
         p[0] = p[1].addSubTree(Tree('TEXT', p[2], []))
     elif len(p) == 2: # TEXT
         p[0] = Tree('comment_text', '', [Tree('TEXT', p[1], [])])
+
+
 
 def p_conditional(p):
     """

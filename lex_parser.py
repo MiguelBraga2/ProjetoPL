@@ -169,6 +169,19 @@ def t_block_indentation(t): # Rever
         return 
     else:
         t.lexer.lineno += 1
+
+        for i in range(len(t.value)-1):
+            if t.value[-i-1] == '\t':
+                aux -= 4
+            else:
+                aux -= 1
+            
+            if aux == previous_indentation:
+                t.lexer.skip(-nc)
+                return
+            else:
+                nc += 1
+        # Para controlar os whitespaces
         # sempres dois espaços antes do texto do block
 
 
@@ -430,12 +443,14 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-- var ola = "ola"
-case ola
-  when "ola"
-    p ola manos
-  default
-    p xau
+body
+  //Ola manos
+  //-
+       Comments for your template writers.
+       Use as much text as you want.
+  // Ola manos
+    	Comments for your HTML readers.
+        Use as much text as you want.
 """ 
 
 lexer.input(data)
