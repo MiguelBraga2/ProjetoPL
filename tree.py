@@ -1,8 +1,6 @@
 import js2py
 context = js2py.EvalJs({})
 
-currentTag = ""
-classes = ""
 
 class Tree:
     def __init__(self, type, value, trees):
@@ -18,8 +16,6 @@ class Tree:
         print(')',end='')
 
     def to_html(self, indentation="\n", condition=""):
-        global currentTag
-        global classes
         string = ""
 
         if self.type == 'lines': 
@@ -147,96 +143,105 @@ class Tree:
 
         elif self.type == 'tagline1': 
             # tagline : tag content INDENT lines DEDENT 
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation) + '\n' + \
+            tag = self.trees[0].to_html(indentation)
+            aux = tag.split(" ")
+            tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
+            string += indentation + tag + self.trees[1].to_html() + \
                             self.trees[3].to_html(indentation = self.trees[2].value)
-            self.trees[0].to_html(indentation) # to update the currentTag
-            string += indentation + '</' + currentTag + '>'
+            string += indentation + '</' + tag_name + '>'
         
         elif self.type == 'tagline2':
             # tagline : tag INDENT lines DEDENT 
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + \
+            tag = self.trees[0].to_html(indentation)
+            aux = tag.split()
+            tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
+            string += indentation + tag + \
                             self.trees[2].to_html(indentation = self.trees[1].value)
-            self.trees[0].to_html(indentation) # to update the currentTag
-            string += indentation + '</' + currentTag + '>'                  
+            string += indentation + '</' + tag_name + '>'                  
         
         elif self.type == 'tagline3':
             # tagline : tag content
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation) + '</' + currentTag + '>' 
+            tag = self.trees[0].to_html(indentation)
+            aux = tag.split()
+            tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
+            string += indentation + tag + self.trees[1].to_html(indentation) + '</' + tag_name + '>' 
         
         elif self.type == 'tagline4': 
             # tagline : tag BAR
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '/>'
+            string += indentation + self.trees[0].to_html(indentation)[:-1] + '/>'
        
         elif self.type == 'tagline5':
-            # tagline : tag <DOT> text (DOT is not in the tree)
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + self.trees[1].to_html(indentation+" ") + '</' + currentTag + '>' 
+            # tagline : tag DOT text
+            tag = self.trees[0].to_html(indentation)
+            aux = tag.split()
+            tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
+            string += indentation + tag + self.trees[1].to_html(indentation+" ") + indentation + '</' + tag_name + '>' 
 
         elif self.type == 'tagline6': 
             # tagline : tag
-            string += indentation + '<' + self.trees[0].to_html(indentation) + '>' + '</' + currentTag + '>' 
+            tag = self.trees[0].to_html(indentation)
+            aux = tag.split()
+            tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
+            string += indentation + tag + '</' + tag_name + '>' 
         
         elif self.type == 'tag1': 
-            # tag : class_id_attributes LPAREN pug_attributes RPAREN 
-            string += 'div' + self.trees[0].to_html(indentation) + self.trees[2].to_html(indentation)
-            currentTag = "div"
-        
+            # tag : TAG class_id_attributes other_attributes
+            string += f'<{self.trees[0].value} {self.trees[1].to_html()} {self.trees[2].to_html()}>'
+            
         elif self.type == 'tag2': 
-            # tag : TAG attributes
-            string += self.trees[0].value + self.trees[1].to_html(indentation)
-            currentTag = self.trees[0].value
-        
+            # tag : TAG class_id_attributes
+            #     | TAG other_attributes
+            string += f'<{self.trees[0].value} {self.trees[1].to_html()}>'
+            
         elif self.type == 'tag3': 
-            # tag : class_id_attributes
-            string += 'div' + self.trees[0].to_html(indentation)
-            currentTag = "div"
+            # tag : TAG
+            string += f'<{self.trees[0].value}>'
         
         elif self.type == 'tag4': 
-            # tag : TAG
-            string += self.trees[0].value
-            currentTag = self.trees[0].value
-        
-        elif self.type == 'attributes1':
-            # attributes : class_id_attributes LPAREN pug_attributes RPAREN 
-            string += self.trees[0].to_html(indentation) + self.trees[2].to_html(indentation)
-        
-        elif self.type == 'attributes2': 
-            # attributes : LPAREN pug_attributes RPAREN
-            string += self.trees[1].to_html(indentation)
-        
-        elif self.type == 'attributes3':
-            # attributes : class_id_attributes
-            string += self.trees[0].to_html(indentation)
-        
+            # tag : class_id_attributes other_attributes
+            string += f'<div {self.trees[0].to_html()} {self.trees[1].to_html()}>'
+
+        elif self.type == 'tag5': 
+            # tag : class_id_attributes
+             string += f'<div {self.trees[0].to_html()}>'
+
         elif self.type == 'class_id_attributes1': 
-            # class_id_attributes : class ID CLASS
-            self.trees[0].to_html(indentation)
-            classes += " " + self.trees[2].value
-            string += f' class="{classes}" id="{self.trees[1].value}"'
+            # class_id_attributes : class_id classes
+            
+            classes = []
+            identifier = None
+            if self.trees[0].trees[0].type == 'ID':
+                identifier = self.trees[0].trees[0].value
+            else:
+                identifier = self.trees[0].trees[1].value
+
+                for c in self.trees[0].trees[0].trees:
+                    classes.append(c.value)
+
+            for c in self.trees[1].trees:
+                classes.append(c.value)
+
+            string += f'class="{" ".join(classes)}" id="{identifier}"'
         
         elif self.type == 'class_id_attributes2': 
-            # class_id_attributes : class ID 
-            self.trees[0].to_html(indentation) 
-            string += f' class="{classes}" id="{self.trees[1].value}"'
-        
-        elif self.type == 'class_id_attributes3': 
-            # class_id_attributes : ID class
-            self.trees[1].to_html(indentation)
-            string += f'class="{classes}" id="{self.trees[0].value}"'
-        
-        elif self.type == 'class_id_attributes4': 
-            # class_id_attributes : ID
-            string += f'id="{self.trees[0].value}"'
-        
-        elif self.type == 'class_id_attributes5': 
-            # class_id_attributes : class
-            self.trees[0].to_html(indentation)
-            string += f'class="{classes}"'
-        
-        elif self.type == 'class': 
-            # class : CLASS CLASS ...
-            for subtree in self.trees:
-                classes += " " + subtree.value
-        
+            # class_id_attributes : class_id 
+            #                     | classes
+            print(self.trees[0].type)
+            if self.trees[0].type == 'ID':
+                string +=  f'id="{self.trees[0].trees[0].value}"'
+            elif len(self.trees) == 2:
+                classes = []
+                for c in self.trees[0].trees:
+                    classes.append(c.value)
+
+                string += f'class="{" ".join(classes)}" id="{self.trees[0].trees[1].value}"'
+            else:
+                classes = []
+                for c in self.trees[0].trees:
+                    classes.append(c.value)
+
+                string += f'class="{" ".join(classes)}"'
+                
         elif self.type == 'pug_attributes': 
             # pug_attributes : pug_attribute pug_attribute ...
             for subtree in self.trees:
@@ -286,8 +291,8 @@ class Tree:
             string += str(self.trees[0].value)
         
         elif self.type == 'text':
-            # text : TEXT TEXT ...
             for subtree in self.trees:
+                print(subtree)
                 string += indentation + subtree.to_html(indentation)
         
         elif self.type == 'TEXT':

@@ -445,10 +445,11 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 
 data = """
-- var values = [];
-ul
-  each val in values.length ? values : ['There are no values']
-    li #{val}
+script.green.red.
+  if (usingPug)
+    console.log('you are awesome')
+  else
+    console.log('use pug')
 """ 
 
 lexer.input(data)

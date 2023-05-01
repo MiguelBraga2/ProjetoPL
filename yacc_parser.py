@@ -2,6 +2,7 @@ import ply.yacc as yacc
 from lex_parser import tokens, data
 from tree import Tree
 
+
 def p_lines(p):
     """
     lines : lines line
@@ -184,64 +185,61 @@ def p_tagline(p):
 
 def p_tag(p):
     """
-    tag : class_id_attributes LPAREN pug_attributes RPAREN 
-        | TAG attributes 
-        | class_id_attributes
+    tag : TAG class_id_attributes other_attributes
+        | TAG class_id_attributes
+        | TAG other_attributes
         | TAG
+        | class_id_attributes other_attributes
+        | class_id_attributes
     """
-    if len(p) == 5: # class_id_attributes LPAREN pug_attributes RPAREN
-        p[0] = Tree('tag1', '', [p[1], Tree('LPAREN', p[2], []), p[3], Tree('RPAREN', p[4], [])])
-    elif len(p) == 3: # TAG attributes
-        p[0] = Tree('tag2', '', [Tree('TAG', p[1], []), p[2]])
-    elif isinstance(p[1], Tree): # class_id_attributes
-        p[0] = Tree('tag3', '', [p[1]])
+    if len(p) == 4: 
+        p[0] = Tree('tag1', '', [Tree('TAG', p[1], []), p[2], p[3]])
+    elif type(p[1]) == str: 
+        if len(p) == 3:
+            p[0] = Tree('tag2', '', [Tree('TAG', p[1], []), p[2]])
+        else: 
+            p[0] = Tree('tag3', '', [Tree('TAG', p[1], [])])
+    elif len(p) == 3: 
+        p[0] = Tree('tag4', '', [p[1], p[2]])
     else: # TAG
-        p[0] = Tree('tag4', '', [Tree('TAG', p[1], [])])
+        p[0] = Tree('tag5', '', [p[1]])
 
-def p_attributes(p):
+def p_other_attribures(p):
     """
-    attributes : class_id_attributes LPAREN pug_attributes RPAREN 
-               | LPAREN pug_attributes RPAREN
-               | class_id_attributes
+    other_attributes : LPAREN pug_attributes RPAREN
     """
-    if len(p) == 5: # class_id_attributes LPAREN pug_attributes RPAREN 
-        p[0] = Tree('attributes1', '', [p[1], Tree('LPAREN', p[2], []), p[3], Tree('RPAREN', p[4], [])])
-    elif len(p) == 4: # LPAREN pug_attributes RPAREN
-        p[0] = Tree('attributes2', '', [Tree('LPAREN', p[1], []), p[2], Tree('RPAREN', p[3], [])])
-    else: # class_id_attributes
-        p[0] = Tree('attributes3', '', [p[1]])
-
+    p[0] = Tree('other_attributes', '', [p[1]])
+    
 def p_class_id_attributes(p):
     """
-    class_id_attributes : class ID CLASS
-                        | class ID 
-                        | ID class
-                        | ID
-                        | class
+    class_id_attributes : classes_id classes 
+                        | classes_id 
+                        | classes 
     """
-    if len(p) == 4: # class ID CLASS
-        p[0] = Tree('class_id_attributes1', '', [p[1], Tree('ID', p[2], []), Tree('CLASS', p[3], [])])
-    elif len(p) == 3: 
-        if isinstance(p[1], Tree): # class ID
-            p[0] = Tree('class_id_attributes2', '', [p[1], Tree('ID', p[2], [])])
-        else: # ID class
-            p[0] = Tree('class_id_attributes3', '', [Tree('ID', p[1], []), p[2]])
-    elif len(p) == 2:
-        if isinstance(p[1], str): # ID
-            p[0] = Tree('class_id_attributes4', '', [Tree('ID', p[1], [])])
-        else: # class
-            p[0] = Tree('class_id_attributes5', '', [p[1]])
-        
+    if len(p) == 3:
+        p[0] = Tree('class_id_attributes1', '', [p[1], p[2]])
+    else:
+        p[0] = Tree('class_id_attributes2', '', [p[1]])
 
-def p_class(p):
+def p_classes_id(p):
+    """
+    classes_id : classes ID
+               | ID 
+    """  
+    if len(p) == 3:
+        p[0] = Tree('classes_id1', '', [p[1], Tree('ID', p[2], [])])
+    else: 
+        p[0] = Tree('classes_id2', '', [Tree('ID', p[1], [])])
+
+def p_classes(p):
     """           
-    class : class CLASS 
-          | CLASS
+    classes : classes CLASS 
+            | CLASS
     """
     if len(p) == 3: # class CLASS
         p[0] = p[1].addSubTree(Tree('CLASS', p[2], []))
     else: # CLASS
-        p[0] = Tree('class', '', [Tree('CLASS', p[1], [])])
+        p[0] = Tree('classes', '', [Tree('CLASS', p[1], [])])
 
 
 def p_pug_attributes(p):
@@ -313,7 +311,7 @@ def p_text(p):
     if len(p) == 5: # text BEGININTERP interpolation ENDINTERP
         p[0] = p[1].addSubTree(p[3])
     elif len(p) == 3: # text TEXT
-        p[0] = p[1].addSubTree(p[2])
+        p[0] = p[1].addSubTree(Tree('TEXT', p[2], []))
     elif len(p) == 4: # BEGININTERP interpolation ENDINTERP
         p[0] = Tree('text', '', [p[2]])
     else: # TEXT

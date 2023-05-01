@@ -55,23 +55,27 @@ tagline : tag content INDENT lines DEDENT
         | tag DOT text
         | tag
 
-tag : TAG attributes 
+tag : TAG class_id_attributes other_attributes
+    | TAG class_id_attributes
+    | TAG other_attributes
     | TAG
-    | class_id_attributes LPAREN pug_attributes RPAREN 
+    | class_id_attributes other_attributes
     | class_id_attributes
 
-attributes : class_id_attributes LPAREN pug_attributes RPAREN
-           | class_id_attributes
-           | LPAREN pug_attributes RPAREN
+other_attributes : LPAREN pug_attributes RPAREN
 
-class_id_attributes : classes ID CLASS
-                    | ID classes
-                    | classes ID
-                    | classes
-                    | ID
 
-classes : classes CLASS
-        | CLASS
+class_id_attributes : classes_id classes
+                    | classes_id 
+                    | classes 
+
+classes_id : classes ID
+           | ID 
+
+classes : classes class
+        | class
+
+class : CLASS
 
 pug_attributes : pug_attributes COMMA pug_attribute
                | pug_attributes pug_attribute
