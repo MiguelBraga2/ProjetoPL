@@ -448,7 +448,7 @@ data = """
 - var values = [];
 ul
   each val in values.length ? values : ['There are no values']
-    li= val
+    li #{val}
 """ 
 
 lexer.input(data)

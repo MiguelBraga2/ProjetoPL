@@ -28,7 +28,6 @@ class Tree:
                 string += line.to_html(indentation) # TODO INDENTATION
         
         elif self.type == 'line1': 
-            # line : tagline
             string += self.trees[0].to_html(indentation) 
 
         elif self.type == 'line2':
@@ -119,7 +118,7 @@ class Tree:
             for val in iterator:
                 if type(val) == str:
                     val = '"' + val + '"'
-                context.execute(self.trees[0].value + '=' + str(val))                  
+                context.execute(self.trees[0].value + '=' + str(val)) 
                 string += self.trees[3].to_html(indentation)
 
         elif self.type == 'iteration2':
@@ -265,7 +264,10 @@ class Tree:
         
         elif self.type == 'content2': 
             # content : text
-            string += self.trees[0].to_html("")
+            aux = self.trees[0].to_html("")
+            if not self.trees[0].trees[0].type.startswith('interpolation'):
+                aux = aux[1:]
+            string += aux
         
         elif self.type == 'interpolation1':
             # interpolation : STRING
@@ -286,8 +288,11 @@ class Tree:
         elif self.type == 'text':
             # text : TEXT TEXT ...
             for subtree in self.trees:
-                string += indentation + subtree.value
+                string += indentation + subtree.to_html(indentation)
         
+        elif self.type == 'TEXT':
+            string += self.value
+
         elif self.type == 'switch':
             # switch : CASE CONDITION INDENT casesdefault DEDENT
             cond = self.trees[0].value

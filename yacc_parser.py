@@ -158,6 +158,7 @@ def p_iteration(p):
         p[0] = Tree('iteration2', '', [Tree('IDENTIFIER', p[2], []), Tree('IDENTIFIER', p[4], []), Tree('JSCODE', p[6], []), Tree('INDENT', p[7], []), p[8], Tree('DEDENT', p[9], [])])
 
 
+# TAGS
 def p_tagline(p):
     """
     tagline : tag content INDENT lines DEDENT 
@@ -310,11 +311,11 @@ def p_text(p):
          | TEXT
     """
     if len(p) == 5: # text BEGININTERP interpolation ENDINTERP
-        p[0] = p[1].addSubTree(Tree('TEXT', str(p[2].trees[0].value), []))
+        p[0] = p[1].addSubTree(p[3])
     elif len(p) == 3: # text TEXT
-        p[0] = p[1].addSubTree(Tree('TEXT', p[2], []))
+        p[0] = p[1].addSubTree(p[2])
     elif len(p) == 4: # BEGININTERP interpolation ENDINTERP
-        p[0] = Tree('text', '', [Tree('TEXT', str(p[2].trees[0].value), [])])
+        p[0] = Tree('text', '', [p[2]])
     else: # TEXT
         p[0] = Tree('text', '', [Tree('TEXT', p[1], [])])
 
