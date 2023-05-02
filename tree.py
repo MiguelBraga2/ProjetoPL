@@ -293,27 +293,6 @@ class Tree:
         elif self.type == 'tag6': 
             # tag : ID 
              string += f'<div id="{self.trees[0].value}">'
-
-        elif self.type == 'pug_attributes': 
-            # pug_attributes : pug_attribute pug_attribute ...
-            for subtree in self.trees:
-                string += " " + subtree.to_html(indentation)
-        
-        elif self.type == 'pug_attribute1': 
-            # pug_attribute : ATTRIBUTENAME EQUALS attribute_value
-            string += self.trees[0].value + self.trees[1].value + self.trees[2].to_html(indentation)
-        
-        elif self.type == 'attribute_value1': 
-            # attribute_value : STRING
-            string += self.trees[0].value
-        
-        elif self.type == 'attribute_value2': 
-            # attribute_value : BOOLEAN
-            string += self.trees[0].value
-        
-        elif self.type == 'attribute_value3': 
-            # attribute_value : NUMBER
-            string += self.trees[0].value
         
         elif self.type == 'content1': 
             # content : EQUALS interpolation
