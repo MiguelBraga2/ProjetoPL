@@ -15,13 +15,69 @@ class Tree:
             tree.print_tree()
         print(')',end='')
 
+
+    def to_html_attribute_list(self):
+        classes = []
+        attributes = {}
+
+        for subtree in self.trees:
+            if subtree.type == 'CLASS':
+                classes.append(subtree.value)
+            elif subtree.type == '':
+                pass
+            else:
+                for tree in subtree.trees: 
+                    if tree.trees[0].value in attributes:
+                        # erro
+                        pass
+                    else:
+                        attributes[tree.trees[0].value] = tree.trees[1].value
+        
+        return classes, attributes
+
+
+    def to_html_attributes(self):
+        
+        
+        if self.type == 'attributes1':
+            classes1, attributes1 = self.trees[0].to_html_attribute_list()
+            id = self.trees[1].value
+            classes2, attributes2 = self.trees[2].to_html_attribute_list()
+            classes = classes + classes1 + classes2
+            attributes = attributes1.copy()
+            attributes1.update(attributes2)
+
+            for chave, valor in attributes1.items():
+                if valor != attributes1.get(chave):
+                    # erro
+                    pass
+                
+            return classes, id, attributes1
+        elif self.type == 'attributes2':
+            id = self.trees[0].value
+            classes, attributes = self.trees[1].to_html_attribute_list()
+            
+            return classes, id, attributes
+        elif self.type == 'attributes3':
+            id = self.trees[1].value
+            classes, attributes = self.trees[0].to_html_attribute_list()
+            
+            return classes, id, attributes
+        elif self.type == 'attributes4':
+            id = self.trees[0].value
+            return [], id, {}
+        elif self.type == 'attributes5':
+            classes, attributes = self.trees[0].to_html_attribute_list()
+            return classes, None, attributes 
+
+
     def to_html(self, indentation="\n", condition=""):
         string = ""
 
         if self.type == 'lines': 
             # lines : line line line ...
             for line in self.trees:
-                string += line.to_html(indentation) # TODO INDENTATION
+                string += line.to_html(indentation)
         
         elif self.type == 'line1': 
             string += self.trees[0].to_html(indentation) 
@@ -185,63 +241,59 @@ class Tree:
             string += indentation + tag + '</' + tag_name + '>' 
         
         elif self.type == 'tag1': 
-            # tag : TAG class_id_attributes other_attributes
-            string += f'<{self.trees[0].value} {self.trees[1].to_html()} {self.trees[2].to_html()}>'
+            # tag : TAG attributes
+            classes, id, attributes = self.trees[1].to_html_attributes()
+            atts = ' '.join([f'{chave}="{valor}"' for chave, valor in attributes.items()])
+    
+            if atts != '':
+                atts = ' ' + atts
+            
+            cls = " ".join(classes)
+
+            if id == None and cls == '': 
+                string += f'<{self.trees[0].value}{atts}>'
+            elif id == None:
+                string += f'<{self.trees[0].value} class="{" ".join(classes)}"{atts}>'
+            elif cls == '':
+                string += f'<{self.trees[0].value}{atts} id="{id}">'
+            else:
+                string += f'<{self.trees[0].value} class="{" ".join(classes)}"{atts} id="{id}">'
             
         elif self.type == 'tag2': 
-            # tag : TAG class_id_attributes
-            #     | TAG other_attributes
-            string += f'<{self.trees[0].value} {self.trees[1].to_html()}>'
-            
-        elif self.type == 'tag3': 
             # tag : TAG
             string += f'<{self.trees[0].value}>'
-        
+            
+        elif self.type == 'tag3': 
+            # tag : CLASS attributes
+            classes, id, attributes = self.trees[1].to_html_attributes()
+            classes.append(self.trees[0].value)
+            atts = ' '.join([f'{chave}="{valor}"' for chave, valor in attributes.items()])
+            if atts != '':
+                atts = ' ' + atts
+            
+            if id == None: 
+                string += f'<div class="{" ".join(classes)}"{atts}>'
+            else:
+                string += f'<div class="{" ".join(classes)}"{atts} id="{id}">'
+            
+            
         elif self.type == 'tag4': 
-            # tag : class_id_attributes other_attributes
-            string += f'<div {self.trees[0].to_html()} {self.trees[1].to_html()}>'
+            # tag : CLASS
+            string += f'<div class="{self.trees[0].value}">'
 
         elif self.type == 'tag5': 
-            # tag : class_id_attributes
-             string += f'<div {self.trees[0].to_html()}>'
+            # tag : ID attribute_list
+            classes, attributes = self.trees[1].to_html_attribute_list()
+            id = self.trees[0].value
+            atts = ' '.join([f'{chave}="{valor}"' for chave, valor in attributes.items()])
+            if atts != '':
+                atts = ' ' + atts + ' '
+            string += f'<div class="{" ".join(classes)}"{atts}id="{id}">'
 
-        elif self.type == 'class_id_attributes1': 
-            # class_id_attributes : class_id classes
-            
-            classes = []
-            identifier = None
-            if self.trees[0].trees[0].type == 'ID':
-                identifier = self.trees[0].trees[0].value
-            else:
-                identifier = self.trees[0].trees[1].value
+        elif self.type == 'tag6': 
+            # tag : ID 
+             string += f'<div id="{self.trees[0].value}">'
 
-                for c in self.trees[0].trees[0].trees:
-                    classes.append(c.value)
-
-            for c in self.trees[1].trees:
-                classes.append(c.value)
-
-            string += f'class="{" ".join(classes)}" id="{identifier}"'
-        
-        elif self.type == 'class_id_attributes2': 
-            # class_id_attributes : class_id 
-            #                     | classes
-            print(self.trees[0].type)
-            if self.trees[0].type == 'ID':
-                string +=  f'id="{self.trees[0].trees[0].value}"'
-            elif len(self.trees) == 2:
-                classes = []
-                for c in self.trees[0].trees:
-                    classes.append(c.value)
-
-                string += f'class="{" ".join(classes)}" id="{self.trees[0].trees[1].value}"'
-            else:
-                classes = []
-                for c in self.trees[0].trees:
-                    classes.append(c.value)
-
-                string += f'class="{" ".join(classes)}"'
-                
         elif self.type == 'pug_attributes': 
             # pug_attributes : pug_attribute pug_attribute ...
             for subtree in self.trees:
@@ -292,7 +344,6 @@ class Tree:
         
         elif self.type == 'text':
             for subtree in self.trees:
-                print(subtree)
                 string += indentation + subtree.to_html(indentation)
         
         elif self.type == 'TEXT':

@@ -444,13 +444,16 @@ t_iteration_ignore = ' \t'
 lexer = lex.lex()
 lexer.indent_stack = [0]
 
+
 data = """
-script.green.red.
+.green#user.red(href='google.com' href='google.com' ).blue.
   if (usingPug)
     console.log('you are awesome')
   else
-    console.log('use pug')
-""" 
+    console.log('use pug')""" 
+
+if data[-1]!= '\n':
+    data = data + '\n'
 
 lexer.input(data)
 

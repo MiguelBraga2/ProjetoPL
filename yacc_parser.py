@@ -183,64 +183,79 @@ def p_tagline(p):
     else: # tag
         p[0] = Tree('tagline6', '', [p[1]])
 
-def p_tag(p):
+def p_tag_tag(p):
     """
-    tag : TAG class_id_attributes other_attributes
-        | TAG class_id_attributes
-        | TAG other_attributes
-        | TAG
-        | class_id_attributes other_attributes
-        | class_id_attributes
-    """
-    if len(p) == 4: 
-        p[0] = Tree('tag1', '', [Tree('TAG', p[1], []), p[2], p[3]])
-    elif type(p[1]) == str: 
-        if len(p) == 3:
-            p[0] = Tree('tag2', '', [Tree('TAG', p[1], []), p[2]])
-        else: 
-            p[0] = Tree('tag3', '', [Tree('TAG', p[1], [])])
-    elif len(p) == 3: 
-        p[0] = Tree('tag4', '', [p[1], p[2]])
-    else: # TAG
-        p[0] = Tree('tag5', '', [p[1]])
-
-def p_other_attribures(p):
-    """
-    other_attributes : LPAREN pug_attributes RPAREN
-    """
-    p[0] = Tree('other_attributes', '', [p[1]])
-    
-def p_class_id_attributes(p):
-    """
-    class_id_attributes : classes_id classes 
-                        | classes_id 
-                        | classes 
+    tag : TAG attributes
+        | TAG 
     """
     if len(p) == 3:
-        p[0] = Tree('class_id_attributes1', '', [p[1], p[2]])
+        p[0] = Tree('tag1', '', [Tree('TAG', p[1], []), p[2]])
     else:
-        p[0] = Tree('class_id_attributes2', '', [p[1]])
-
-def p_classes_id(p):
+        p[0] = Tree('tag2', '', [])
+    
+def p_tag_class(p):
     """
-    classes_id : classes ID
-               | ID 
-    """  
+    tag : CLASS attributes
+        | CLASS 
+    """
     if len(p) == 3:
-        p[0] = Tree('classes_id1', '', [p[1], Tree('ID', p[2], [])])
-    else: 
-        p[0] = Tree('classes_id2', '', [Tree('ID', p[1], [])])
+        p[0] = Tree('tag3', '', [Tree('CLASS', p[1], []), p[2]])
+    else:
+        p[0] = Tree('tag4', '', [])
 
-def p_classes(p):
-    """           
-    classes : classes CLASS 
-            | CLASS
+def p_tag_id(p):
     """
-    if len(p) == 3: # class CLASS
-        p[0] = p[1].addSubTree(Tree('CLASS', p[2], []))
-    else: # CLASS
-        p[0] = Tree('classes', '', [Tree('CLASS', p[1], [])])
+    tag : ID attribute_list
+        | ID   
+    """
+    if len(p) == 3:
+        p[0] = Tree('tag5', '', [Tree('ID', p[1], []), p[2]])
+    else:
+        p[0] = Tree('tag6', '', [])
 
+def p_attributes(p):
+    """
+    attributes : attribute_list ID attribute_list
+               | ID attribute_list
+               | attribute_list ID
+               | ID
+               | attribute_list
+    """
+    if len(p) == 4:
+        p[0] == Tree('attributes1', '', [p[1], Tree('ID', p[2], []) , p[3]])
+    elif len(p) == 3:
+        if type(p[1]) == str:
+            p[0] = Tree('attributes2', '', [Tree('ID', p[1], []) , p[2]])
+        else:
+            p[0] = Tree('attributes3', '', [p[1], Tree('ID', p[2], [])])
+    else:
+        if type(p[1]) == str:
+            p[0] = Tree('attributes4', '', [Tree('ID', p[1], [])])
+        else:
+            p[0] = Tree('attributes5', '', [p[1]])           
+
+def p_attributes_list(p):
+    """
+    attribute_list : attribute_list attribute
+                   | attribute
+    """ 
+    if len(p) == 3:
+        p[0] = p[1].addSubTree(p[2])
+    else:
+        p[0] = Tree('attribute_list', '', [p[1]])   
+
+def p_attribute(p):
+    """
+    attribute : LPAREN pug_attributes RPAREN
+              | LPAREN RPAREN
+              | CLASS
+    """
+    if len(p) == 4:
+        p[0] = p[2]
+    elif len(p) == 3:
+        p[0] = Tree('', '', [])
+    else:
+        p[0] = Tree('CLASS', p[1], [])
 
 def p_pug_attributes(p):
     """
@@ -260,7 +275,7 @@ def p_pug_attribute(p):
     """               
     pug_attribute : ATTRIBUTENAME EQUALS attribute_value
     """
-    p[0] = Tree('pug_attribute1', '', [Tree('ATTRIBUTENAME', p[1], []), Tree('EQUALS', p[2], []), p[3]])
+    p[0] = Tree('pug_attribute', '', [Tree('ATTRIBUTENAME', p[1], []), p[3]])
 
 
 def p_attribute_value(p):
@@ -269,12 +284,12 @@ def p_attribute_value(p):
                     | BOOLEAN
                     | NUMBER
     """
-    if p[1][0] == '"': # STRING
-        p[0] = Tree('attribute_value1', '', [Tree('STRING', p[1], [])])
+    if p[1][0] == '"' or p[1][0] == "'": # STRING
+        p[0] = Tree('STRING', p[1][1:-1], [])
     elif p[1] == 'true' or p[1] == 'false' : # BOOLEAN
-        p[0] = Tree('attribute_value2', '', [Tree('BOOLEAN', p[1], [])])
+        p[0] = Tree('BOOLEAN', p[1], [])
     else: # NUMBER
-        p[0] = Tree('attribute_value3', '', [Tree('NUMBER', p[1], [])])
+        p[0] = Tree('NUMBER', p[1], [])
 
 
 def p_content(p):
