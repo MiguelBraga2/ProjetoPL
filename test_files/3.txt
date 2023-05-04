@@ -1,0 +1,1 @@
+.class1#id2(attra="ola", attrb=2) ola Mundo

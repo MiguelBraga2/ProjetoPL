@@ -1,4 +1,5 @@
 import ply.lex as lex
+import sys
 
 # Define the tokens for PugJS
 tokens = (
@@ -431,23 +432,13 @@ t_iteration_ignore = ' \t'
 lexer = lex.lex()
 lexer.indent_stack = [0]
 
-data = """
-html(lang="en")
-  head
-    title= pageTitle
-    script(type='text/javascript').
-      if (foo) bar(1 + 5)
-  body
-    h1 Pug - node template engine
-    #container.col
-      if youAreUsingPug
-        p You are amazing
-      p.
-        Pug is a terse and simple templating language with a
-        strong focus on performance and powerful features
-""" 
+data = """""" 
+for line in sys.stdin:
+    data += line
+
+#print(data)
 
 lexer.input(data)
 
-for tok in lexer:
-    print(tok)
+#for tok in lexer:
+    #print(tok)
