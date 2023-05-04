@@ -191,7 +191,7 @@ def p_tag_tag(p):
     if len(p) == 3:
         p[0] = Tree('tag1', '', [Tree('TAG', p[1], []), p[2]])
     else:
-        p[0] = Tree('tag2', '', [])
+        p[0] = Tree('tag2', '', [Tree('TAG', p[1], [])])
     
 def p_tag_class(p):
     """

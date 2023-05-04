@@ -331,7 +331,7 @@ class Tree:
         elif self.type == 'switch':
             # switch : CASE CONDITION INDENT casesdefault DEDENT
             cond = self.trees[0].value
-            string += self.trees[2].to_html(self.trees[1].value, cond)
+            string += self.trees[2].to_html(indentation, cond)
 
         elif self.type == 'casesdefault1':
             default = self.trees[1]
