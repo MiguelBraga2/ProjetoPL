@@ -1,6 +1,8 @@
 *.swp
 *.out
 teste.py
-*.txt
+./*.txt
+diff_files/*.txt
+output_files/*.txt
 __pycache__/
 parsetab.py

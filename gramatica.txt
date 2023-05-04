@@ -7,6 +7,18 @@ line : tagline
      | comment
      | conditional
      | iteration
+     | switch
+
+switch : CASE CONDITION INDENT casesdefault DEDENT
+
+casesdefault : cases DEFAULT INDENT lines DEDENT
+             | cases
+             | DEFAULT INDENT lines DEDENT
+
+cases : cases case 
+      | case  
+
+case : WHEN CONDITION INDENT lines DEDENT
 
 comment : COMMENT comment_text
         | COMMENT
@@ -14,16 +26,27 @@ comment : COMMENT comment_text
 comment_text : comment_text TEXT
              | TEXT   
 
-conditional : IF CONDITION INDENT lines DEDENT
-            | ELSE IF CONDITION INDENT lines DEDENT 
-            | ELSE INDENT lines DEDENT
-            | UNLESS CONDITION INDENT lines DEDENT
-            | IF CONDITION
-            | ELSE IF CONDITION 
-            | ELSE
-            | UNLESS CONDITION
+conditional : conditional_begin conditional_middle conditional_final
+            | conditional_begin conditional_final
+            | conditional_begin conditional_middle
+            | conditional_begin
+
+conditional_begin : IF CONDITION INDENT lines DEDENT
+                  | IF CONDITION
+                  | UNLESS CONDITION INDENT lines DEDENT 
+                  | UNLESS CONDITION
+
+conditional_middle : conditional_middle ELSE IF INDENT lines DEDENT 
+                   | conditional_middle ELSE IF 
+                   | ELSE IF INDENT lines DEDENT 
+                   | ELSE IF 
+
+conditional_final : ELSE INDENT lines DEDENT
+                  | ELSE 
+
 
 iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
+          | EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
 
 tagline : tag content INDENT lines DEDENT 
         | tag INDENT lines DEDENT 
@@ -32,23 +55,25 @@ tagline : tag content INDENT lines DEDENT
         | tag DOT text
         | tag
 
-tag : TAG attributes 
-    | TAG
-    | class_id_attributes LPAREN pug_attributes RPAREN 
-    | class_id_attributes
+tag : TAG attributes
+    | TAG 
+    | CLASS attribute_list
+    | CLASS 
+    | ID attribute_list
+    | ID     
 
-attributes : class_id_attributes LPAREN pug_attributes RPAREN
-           | class_id_attributes
-           | LPAREN pug_attributes RPAREN
+attributes : attribute_list ID attribute_list
+           | attribute_list ID
+           | attribute_list
+           | ID attribute_list
+           | ID
 
-class_id_attributes : classes ID CLASS
-                    | ID classes
-                    | classes ID
-                    | classes
-                    | ID
-
-classes : classes CLASS
-        | CLASS
+attribute_list : CLASS attribute_list 
+               | LPAREN pug_attributes RPAREN attribute_list
+               | LPAREN RPAREN attribute_list
+               | CLASS  
+               | LPAREN RPAREN
+               | LPAREN pug_attributes RPAREN
 
 pug_attributes : pug_attributes COMMA pug_attribute
                | pug_attributes pug_attribute
@@ -66,6 +91,7 @@ content : EQUALS interpolation
 
 interpolation : VARIABLE
               | STRING 
+              | NUMBER
 
 text : text BEGININTERP interpolation ENDINTERP
      | text TEXT
