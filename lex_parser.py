@@ -1,20 +1,31 @@
 import ply.lex as lex
 import sys
 
+reserved = {
+    'if' : 'IF',
+   'then' : 'THEN',
+   'else' : 'ELSE',
+   'while' : 'WHILE',
+   'unless' : 'UNLESS',
+   'each' : 'EACH',
+   'when' : 'WHEN',
+   'default' : 'DEFAULT',
+   'case' : 'CASE'
+}
+
 # Define the tokens for PugJS
 tokens = (
+    'ATTRIBUTES',
     'INDENT',
     'DEDENT',
     'CLASS',
     'ID',
     'TAG',
     'IDENTIFIER',
-    'ATTRIBUTENAME',
     'LPAREN',
     'RPAREN',
     'COMMA',
     'EQUALS',
-    'BOOLEAN',
     'STRING',
     'IGNORECOMMENT',
     'BAR',
@@ -34,7 +45,8 @@ tokens = (
     'IN',
     'WHEN',
     'DEFAULT',
-    'CASE'
+    'CASE',
+    'ELSEIF'
     # falta dois pontos e |
 )
 
@@ -79,7 +91,7 @@ def t_INITIAL_indentation(t):
         if t.lexer.indent_stack[-1] > current_indentation:
             t.lexer.skip(-len(t.value))
         elif t.lexer.indent_stack[-1] < current_indentation:
-            raise ValueError('Indententation error')
+            raise ValueError('Indentation error')
         else:
             t.lexer.lineno += 1 
         t.type = 'DEDENT'
@@ -190,30 +202,22 @@ def t_block_indentation(t): # Rever
 
 def t_LPAREN(t):
     r'\('
-    t.lexer.push_state('attributes')
-    return t
+    t.lexer.begin('attributes')
 
 
-def t_attributes_ATTRIBUTENAME(t):
-    r'[a-z]+'
-    return t
-
-
-def t_attributes_EQUALS(t):
-    r'\='
-    t.lexer.push_state('assign')
-    return t
-
-
-def t_attributes_COMMA(t):
-    r','
-    return t
-
-
-def t_attributes_RPAREN(t):
-    r'\)'
-    t.lexer.pop_state()
-    return t
+def t_attributes_ATTRIBUTES(t):
+    r'[^\)\(]*[\(\)]'
+    t.lexer.attributesBuffer += t.value
+    if t.value[-1] == '(':
+        t.lexer.parCount+=1
+    elif t.value[-1] == ')':
+        t.lexer.parCount-=1
+        if t.lexer.parCount == -1:
+            t.value = t.lexer.attributesBuffer[:-1]
+            t.lexer.begin('INITIAL')
+            t.lexer.attributesBuffer = ""
+            t.lexer.parCount=0
+            return t 
 
 
 # Define a rule for the unbuffered comments
@@ -245,23 +249,6 @@ def t_JSCODE(t):
     t.value = t.value[1:]
     return t
 
-
-# ASSIGN
-def t_assign_BOOLEAN(t):
-    r'(true|else)'
-    t.lexer.pop_state()
-    return t
-
-def t_assign_NUMBER(t):
-    r'\d+'
-    t.lexer.pop_state()
-    return t
-
-def t_assign_IDENTIFIER(t):
-    r'\w+'
-    t.lexer.pop_state()
-    return t
-
 def t_assign_STYLE(t):
     r'\{[^\}]*\}'
     t.value = t.value.replace(" ", "")
@@ -272,8 +259,8 @@ def t_assign_STYLE(t):
     t.lexer.pop_state()
     return t
 
-def t_assign_STRING(t):
-    r'\'[^\']*\'|"[^\"]*"'
+def t_assign_JSCODE(t):
+    r'.+'
     t.lexer.pop_state()
     return t
 
@@ -303,12 +290,6 @@ def t_interpolation_ENDINTERP(t):
     return t
 
 
-# ITERATION
-def t_EACH(t):
-    r'each\b'
-    t.lexer.begin('iteration')
-    return t
-
 def t_iteration_JSCODE(t):
     r'(?<=(in\s)).*'
     t.lexer.begin('INITIAL')
@@ -331,45 +312,29 @@ def t_IF(t):
     t.lexer.begin('conditional')
     return t
 
-def t_CASE(t):
-    r'case\b'
-    t.lexer.begin('conditional')
-    return t
-
-def t_WHEN(t):
-    r'when\b'
-    t.lexer.begin('conditional')
-    return t
-
-def t_DEFAULT(t):
-    r'default\b'
-    return t
-
-def t_WHILE(t):
-    r'while\b'
-    t.lexer.begin('conditional')
-    return t
-
 
 def t_conditional_CONDITION(t):
     r'.+'
     t.lexer.begin('INITIAL')
     return t
 
-
-def t_ELSE(t):
-    r'else\b'
-    return t
-
-def t_UNLESS(t):
-    r'unless\b'
+def t_ELSEIF(t):
+    r'else[ ]if'
     t.lexer.begin('conditional')
     return t
-
 
 # Define a rule for the TAG token
 def t_TAG(t):
     r'[a-z][a-z0-9]*'
+    t.type = reserved.get(t.value, 'TAG')
+    
+    match t.type:
+        case 'UNLESS' | 'WHILE' | 'CASE' | 'WHEN':
+            t.lexer.begin('conditional')
+        case 'EACH':
+            t.lexer.begin('iteration')
+        case _:
+            pass
     return t
 
 
@@ -444,10 +409,14 @@ t_iteration_ignore = ' \t'
 # Create the lexer
 lexer = lex.lex()
 lexer.indent_stack = [0]
+lexer.parCount = 0
+lexer.attributesBuffer = ""
 
-data = """""" 
-for line in sys.stdin:
-    data += line
+data = """
+""" 
+# Testes
+#for line in sys.stdin:
+#   data += line
 
 #print(data)
 
@@ -456,5 +425,5 @@ if data[-1]!= '\n':
 
 lexer.input(data)
 
-#for tok in lexer:
-    #print(tok)
+for tok in lexer:
+    print(tok)

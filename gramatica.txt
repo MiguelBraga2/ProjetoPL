@@ -36,10 +36,10 @@ conditional_begin : IF CONDITION INDENT lines DEDENT
                   | UNLESS CONDITION INDENT lines DEDENT 
                   | UNLESS CONDITION
 
-conditional_middle : conditional_middle ELSE IF INDENT lines DEDENT 
-                   | conditional_middle ELSE IF 
-                   | ELSE IF INDENT lines DEDENT 
-                   | ELSE IF 
+conditional_middle : conditional_middle ELSEIF INDENT lines DEDENT 
+                   | conditional_middle ELSEIF 
+                   | ELSEIF INDENT lines DEDENT 
+                   | ELSEIF 
 
 conditional_final : ELSE INDENT lines DEDENT
                   | ELSE 
@@ -69,21 +69,9 @@ attributes : attribute_list ID attribute_list
            | ID
 
 attribute_list : CLASS attribute_list 
-               | LPAREN pug_attributes RPAREN attribute_list
-               | LPAREN RPAREN attribute_list
+               | ATTRIBUTES attribute_list
                | CLASS  
-               | LPAREN RPAREN
-               | LPAREN pug_attributes RPAREN
-
-pug_attributes : pug_attributes COMMA pug_attribute
-               | pug_attributes pug_attribute
-               | pug_attribute
-
-pug_attribute : ATTRIBUTENAME EQUALS attribute_value
-
-attribute_value : STRING
-                | BOOLEAN
-                | NUMBER
+               | ATTRIBUTES
 
 
 content : EQUALS interpolation
