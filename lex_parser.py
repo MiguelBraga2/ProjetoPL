@@ -23,12 +23,9 @@ tokens = (
     'ID',
     'TAG',
     'IDENTIFIER',
-    'LPAREN',
-    'RPAREN',
     'COMMA',
     'EQUALS',
     'STRING',
-    'IGNORECOMMENT',
     'BAR',
     'BEGININTERP',
     'ENDINTERP',
@@ -51,7 +48,7 @@ tokens = (
     # falta dois pontos e |
 )
 
-
+# Define the states for pugjs
 states = (
     ('ignorecomment', 'exclusive'),
     ('assign', 'exclusive'),
@@ -62,6 +59,7 @@ states = (
     ('conditional', 'exclusive'),
     ('iteration', 'exclusive'),
 )
+
 
 # Function to get indentation level 
 def indetation_level(line):
@@ -163,7 +161,6 @@ def t_comment_indentation(t):
         # Para controlar os whitespaces
 
 
-
 # Define a rule for the indentation in the block state
 def t_block_indentation(t): # Rever
     r'\n[ \t]*'
@@ -201,11 +198,13 @@ def t_block_indentation(t): # Rever
         # sempres dois espaços antes do texto do block
 
 
-def t_LPAREN(t):
+# Define a rule to enter the attributes state
+def t_lparen(t):
     r'\('
     t.lexer.begin('attributes')
 
 
+# Define a rule for the attributes
 def t_attributes_ATTRIBUTES(t):
     r'[^\)\(]*[\(\)]'
     t.lexer.attributesBuffer += t.value
@@ -222,17 +221,19 @@ def t_attributes_ATTRIBUTES(t):
 
 
 # Define a rule for the unbuffered comments
-def t_IGNORECOMMENT(t):
+def t_ignorecomment(t):
     r'//-.*'
     t.lexer.begin('ignorecomment')
 
 
+# Define a rule for the comments
 def t_COMMENT(t):
     r'//.*'
     t.lexer.begin('comment')
     return t
 
 
+# Define a rule for the BAR symbol
 def t_BAR(t):
     r'\/'
     return t
@@ -245,11 +246,14 @@ def t_EQUALS(t):
     return t
 
 
+# Define a rule for the JSCODE 
 def t_JSCODE(t):
     r'\-.*'
     t.value = t.value[1:]
     return t
 
+
+# Define a rule for the STYLE 
 def t_assign_STYLE(t):
     r'\{[^\}]*\}'
     t.value = t.value.replace(" ", "")
@@ -260,69 +264,84 @@ def t_assign_STYLE(t):
     t.lexer.pop_state()
     return t
 
+
+# Define a rule for the JSCODE in assign state 
 def t_assign_JSCODE(t):
     r'.+'
     t.lexer.pop_state()
     return t
 
 
-# INTERPOLATION
+#  Define a rule for the begin interpolation symbols
 def t_BEGININTERP(t):
     r'\#\{'
     t.lexer.push_state('interpolation')
     return t
 
 
+#  Define a rule for the STRING
 def t_interpolation_STRING(t):
     r'\'[^\']*\'|"[^\"]*"'
     return t
 
+
+#  Define a rule for the NUMBER
 def t_interpolation_NUMBER(t):
     r'\d+'
     return t
 
+
+#  Define a rule for the IDENTIFIER
 def t_interpolation_IDENTIFIER(t):
     r'\w+'
     return t
 
+
+#  Define a rule for the end interpolation symbol
 def t_interpolation_ENDINTERP(t):
     r'\}'
     t.lexer.pop_state()
     return t
 
 
+#  Define a rule for the JSCODE in iteration state
 def t_iteration_JSCODE(t):
     r'(?<=(in\s)).*'
     t.lexer.begin('INITIAL')
     return t 
 
+
+#  Define a rule for the COMA symbol
 def t_iteration_COMMA(t):
     r','
     return t
 
+
+#  Define a rule for the IN word
 def t_iteration_IN(t):
     r'in\b'
     return t
 
+
+#  Define a rule for the IDENTIFIER
 def t_iteration_IDENTIFIER(t):
     r'\w+'
     return t
 
-def t_IF(t):
-    r'(?<=else)\sif\b|if\b'
-    t.lexer.begin('conditional')
-    return t
 
-
+#  Define a rule for the CONDITION of conditional
 def t_conditional_CONDITION(t):
     r'.+'
     t.lexer.begin('INITIAL')
     return t
 
+
+#  Define a rule for the ELSEIF token
 def t_ELSEIF(t):
     r'else[ ]if'
     t.lexer.begin('conditional')
     return t
+
 
 # Define a rule for the TAG token
 def t_TAG(t):
@@ -330,7 +349,7 @@ def t_TAG(t):
     t.type = reserved.get(t.value, 'TAG')
     
     match t.type:
-        case 'UNLESS' | 'WHILE' | 'CASE' | 'WHEN':
+        case 'UNLESS' | 'WHILE' | 'CASE' | 'WHEN' | 'IF':
             t.lexer.begin('conditional')
         case 'EACH':
             t.lexer.begin('iteration')
@@ -353,42 +372,43 @@ def t_CLASS(t):
     return t
 
 
+# Define a rule for the DOT token
 def t_DOT(t):
     r'\.'
     t.lexer.begin('block')
     return t
     
 
+# Define a rule for the TEXT token
 def t_TEXT(t):
-    r'((?<!\s)[ \t]+[^\n\#]+((?!(\#\{))\#[^\n\#]+)*|<.*>|(?<=})[^\n\#]+((?!(\#\{))\#[^\n\#]+)*)'
+    r'[ \t]+[^\n\#]*((?!(\#\{))\#[^\n\#]+)*|<.*?>|(?<=})[^\n\#]+((?!(\#\{))\#[^\n\#]+)*'
     if t.value.isspace():
         return
     return t
 
 
+# Define a rule for the comment text 
 def t_comment_TEXT(t):
     r'.+'
     return t
 
 
+# Define a rule for the ignorecomment text
 def t_ignorecomment_TEXT(t):
     r'.+'
 
 
+# Define a rule for the block text
 def t_block_TEXT(t):
     r'[^\n\#]+((?!(\#\{))\#[^\n\#]+)*'
     return t
 
 
+# Define a rule for the block BEFININTERP token
 def t_block_BEGININTERP(t):
     r'\#\{'
     t.lexer.push_state('interpolation')
     return t
-
-
-def t_whitespaces(t):
-    r'[ \t]+'
-    pass
 
 
 # Define an error handling function
@@ -412,20 +432,3 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 lexer.parCount = 0
 lexer.attributesBuffer = ""
-
-data = """
-a(class='button' href='//google.com') Google
-""" 
-# Testes
-#for line in sys.stdin:
-#   data += line
-
-#print(data)
-
-if data[-1]!= '\n':
-    data = data + '\n'
-
-lexer.input(data)
-
-for tok in lexer:
-    print(tok)

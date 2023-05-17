@@ -1,5 +1,5 @@
 import ply.yacc as yacc
-from lex_parser import tokens, data
+from lex_parser import tokens
 from tree import Tree
 
 
@@ -301,10 +301,3 @@ def p_error(p):
 
 
 parser = yacc.yacc(debug=True)
-
-tree = parser.parse(data)
-
-
-string = tree.to_html()
-string = string[1:]
-print(string)

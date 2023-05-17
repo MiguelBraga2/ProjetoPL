@@ -31,8 +31,7 @@ class Tree:
                 for i in range(len(attributes_names)):
                     attributes_names[i] = attributes_names[i].strip()
                     attributes_names[i] = attributes_names[i][:-1]
-                    context.execute('atr=' + attributes_values[i])
-                    attributes_values[i] = context.eval('atr')
+                    attributes_values[i] = context.eval(attributes_values[i])
 
                     if attributes_names[i] == 'class':
                         classes.append(attributes_values[i])
