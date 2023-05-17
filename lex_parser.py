@@ -1,6 +1,7 @@
 import ply.lex as lex
 import sys
 
+# Reserved words 
 reserved = {
     'if' : 'IF',
    'then' : 'THEN',
@@ -413,6 +414,7 @@ lexer.parCount = 0
 lexer.attributesBuffer = ""
 
 data = """
+a(class='button' href='//google.com') Google
 """ 
 # Testes
 #for line in sys.stdin:

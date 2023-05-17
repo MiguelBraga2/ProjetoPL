@@ -236,13 +236,25 @@ def p_attributes(p):
 
 def p_attributes_list(p):
     """
-    attribute_list : attribute_list attribute
+    attribute_list : attribute_list attribute  
                    | attribute
     """ 
     if len(p) == 3:
         p[0] = p[1].addSubTree(p[2])
     else:
         p[0] = Tree('attribute_list', '', [p[1]])   
+
+def p_attribute_class(p):
+    """
+    attribute : CLASS
+    """
+    p[0] = Tree('CLASS', p[1], [])
+
+def p_attribute_attributes(p):
+    """
+    attribute : ATTRIBUTES
+    """
+    p[0] = Tree('ATTRIBUTES', p[1], [])
 
 def p_content(p):
     """           

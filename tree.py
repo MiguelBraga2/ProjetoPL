@@ -1,4 +1,5 @@
 import js2py
+import re
 context = js2py.EvalJs({})
 
 
@@ -23,16 +24,23 @@ class Tree:
         for subtree in self.trees:
             if subtree.type == 'CLASS':
                 classes.append(subtree.value)
-            elif subtree.type == '':
-                pass
             else:
-                for tree in subtree.trees: 
-                    if tree.trees[0].value in attributes:
-                        # erro
-                        pass
+                attributes_names = re.findall(r'\w+\s*=(?!=)', subtree.value)
+                attributes_values = re.split(r'\w+\s*=(?!=)', subtree.value)[1:]
+                
+                for i in range(len(attributes_names)):
+                    attributes_names[i] = attributes_names[i].strip()
+                    attributes_names[i] = attributes_names[i][:-1]
+                    context.execute('atr=' + attributes_values[i])
+                    attributes_values[i] = context.eval('atr')
+
+                    if attributes_names[i] == 'class':
+                        classes.append(attributes_values[i])
+                    elif attributes_names[i] not in attributes:
+                        attributes[attributes_names[i]] = attributes_values[i] 
                     else:
-                        attributes[tree.trees[0].value] = tree.trees[1].value
-        
+                        raise ValueError(f'Duplicated attribute "{attributes_names[i]}" in not allowed')
+
         return classes, attributes
 
 
