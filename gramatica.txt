@@ -68,11 +68,11 @@ attributes : attribute_list ID attribute_list
            | ID attribute_list
            | ID
 
-attribute_list : CLASS attribute_list 
-               | ATTRIBUTES attribute_list
-               | CLASS  
-               | ATTRIBUTES
+attribute_list : attribute_list attribute 
+               | attribute
 
+attribute : CLASS
+          | ATTRIBUTES
 
 content : EQUALS interpolation
         | text
