@@ -191,6 +191,13 @@ class Tree:
                 context.execute(self.trees[1].value + ' = ' + 'iteration2[' + str(val) + ']')
                 string += self.trees[4].to_html(indentation)
 
+        elif self.type == 'iteration3':
+            # iteration : WHILE CONDITION INDENT lines DEDENT
+            cond = context.eval(self.trees[0].value)
+            while cond:
+                string += self.trees[2].to_html(indentation)
+                cond = context.eval(self.trees[0].value)
+
         elif self.type == 'comment1':
             # comment : COMMENT comment_text
             fst_line = self.trees[0].value[2:]
@@ -302,8 +309,8 @@ class Tree:
              string += f'<div id="{self.trees[0].value}">'
         
         elif self.type == 'content1': 
-            # content : EQUALS interpolation
-            string += self.trees[1].to_html(indentation)
+            # content : EQUALS JSCODE
+            string += str(context.eval(self.trees[0].value)) 
         
         elif self.type == 'content2': 
             # content : text

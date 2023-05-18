@@ -47,6 +47,7 @@ conditional_final : ELSE INDENT lines DEDENT
 
 iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
           | EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
+          | WHILE CONDITION INDENT lines DEDENT
 
 tagline : tag content INDENT lines DEDENT 
         | tag INDENT lines DEDENT 
@@ -74,7 +75,7 @@ attribute_list : attribute_list attribute
 attribute : CLASS
           | ATTRIBUTES
 
-content : EQUALS interpolation
+content : EQUALS JSCODE
         | text
 
 interpolation : VARIABLE

@@ -1,5 +1,5 @@
 import ply.yacc as yacc
-from lex_parser import tokens
+from lex_parser import tokens,lexer
 from tree import Tree
 
 
@@ -152,11 +152,14 @@ def p_iteration(p):
     """
     iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
               | EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
+              | WHILE CONDITION INDENT lines DEDENT
     """
     if len(p) == 8:
         p[0] = Tree('iteration1', '', [Tree('IDENTIFIER', p[2], []), Tree('JSCODE', p[4], []), Tree('INDENT', p[5], []), p[6], Tree('DEDENT', p[7], [])])
-    else:
+    elif len(p) == 10:
         p[0] = Tree('iteration2', '', [Tree('IDENTIFIER', p[2], []), Tree('IDENTIFIER', p[4], []), Tree('JSCODE', p[6], []), Tree('INDENT', p[7], []), p[8], Tree('DEDENT', p[9], [])])
+    else:
+        p[0] = Tree('iteration3', '', [Tree('CONDITION', p[2], []), Tree('INDENT', p[3], []), p[4], Tree('DEDENT', p[5], [])]) 
 
 
 # TAGS
@@ -258,11 +261,11 @@ def p_attribute_attributes(p):
 
 def p_content(p):
     """           
-    content : EQUALS interpolation
+    content : EQUALS JSCODE
             | text
     """
     if len(p) == 3: # EQUALS interpolation
-        p[0] = Tree('content1', '', [Tree('EQUALS', p[1], []), p[2]])
+        p[0] = Tree('content1', '', [Tree('JSCODE', p[2], [])])
     elif len(p) == 2: # text
         p[0] = Tree('content2', '', [p[1]])
 
@@ -297,7 +300,15 @@ def p_text(p):
         p[0] = Tree('text', '', [Tree('TEXT', p[1], [])])
 
 def p_error(p):
-    print("Erro sintático")
+    if p:
+        print(f"Erro de sintaxe na entrada '{p.value}' na linha {p.lineno}, coluna {encontra_coluna(p)}")
+    else:
+        print("Erro de sintaxe no final da entrada")
+
+def encontra_coluna(token):
+    linha_inicio = lexer.lexdata.rfind('\n', 0, token.lexpos) + 1
+    return (token.lexpos - linha_inicio) + 1
+
 
 
 parser = yacc.yacc(debug=True)
