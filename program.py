@@ -1,10 +1,12 @@
 from yacc_parser import parser
 
 data = """
-- var n = 0;
-ul
-  while n < 4
-    li= n++
+<ul>
+<li>
+<p>Ola Mundo!</p>
+</li>
+</ul>
+<p>Fora da lista</p>
 """
 
 if data[-1] != '\n':

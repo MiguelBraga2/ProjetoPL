@@ -4,7 +4,6 @@ import sys
 # Reserved words 
 reserved = {
     'if' : 'IF',
-   'then' : 'THEN',
    'else' : 'ELSE',
    'while' : 'WHILE',
    'unless' : 'UNLESS',
@@ -44,7 +43,7 @@ tokens = (
     'WHEN',
     'DEFAULT',
     'CASE',
-    'ELSEIF'
+    'ELSEIF',
     # falta dois pontos e |
 )
 
