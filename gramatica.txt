@@ -36,10 +36,10 @@ conditional_begin : IF CONDITION INDENT lines DEDENT
                   | UNLESS CONDITION INDENT lines DEDENT 
                   | UNLESS CONDITION
 
-conditional_middle : conditional_middle ELSEIF INDENT lines DEDENT 
-                   | conditional_middle ELSEIF 
-                   | ELSEIF INDENT lines DEDENT 
-                   | ELSEIF 
+conditional_middle : conditional_middle ELSEIF CONDITION INDENT lines DEDENT 
+                   | conditional_middle ELSEIF CONDITION
+                   | ELSEIF CONDITION INDENT lines DEDENT 
+                   | ELSEIF CONDITION
 
 conditional_final : ELSE INDENT lines DEDENT
                   | ELSE 
