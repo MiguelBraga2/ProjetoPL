@@ -184,7 +184,7 @@ def p_tagline(p):
     """
     tagline : tag content INDENT lines DEDENT 
             | tag INDENT lines DEDENT 
-            | tag content 
+            | tag content
             | tag BAR
             | tag DOT text
             | tag
@@ -221,7 +221,7 @@ def p_tag_class(p):
     if len(p) == 3:
         p[0] = Tree(type='tag3', trees=[Tree(type='CLASS', value=p[1]), p[2]])
     else:
-        p[0] = Tree(type='tag4')
+        p[0] = Tree(type='tag4', trees=[Tree(type='CLASS', value=p[1])])
 
 def p_tag_id(p):
     """
@@ -231,7 +231,7 @@ def p_tag_id(p):
     if len(p) == 3:
         p[0] = Tree(type='tag5', trees=[Tree(type='ID', value=p[1]), p[2]])
     else:
-        p[0] = Tree(type='tag6')
+        p[0] = Tree(type='tag6', trees=[Tree(type='ID', value=p[1])])
 
 def p_attributes(p):
     """

@@ -67,7 +67,7 @@ tag : TAG attributes
     | CLASS attributes
     | CLASS 
     | ID attribute_list
-    | ID     
+    | ID
 
 attributes : attribute_list ID attribute_list
            | attribute_list ID

@@ -1,11 +1,9 @@
 from yacc_parser import parser
 
 data = """
--
-  var list = ["Uno", "Dos", "Tres",
-          "Cuatro", "Cinco", "Seis"]
-each item in list
-  li= item
+.class1
+  .class3
+.class2
 """
 
 if data[-1] != '\n':
