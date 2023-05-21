@@ -22,7 +22,7 @@ def p_line(p):
          | iteration
          | switch
     """
-    p[0] = Tree(type='line1', trees=[p[1]]) 
+    p[0] = Tree(type='line', trees=[p[1]]) 
 
 
 def p_code(p):

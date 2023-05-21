@@ -1,8 +1,8 @@
 from yacc_parser import parser
 
 data = """
-each x in [1,2,3]
-  li= x
+- if (1==1)
+  p= 1
 """
 
 if data[-1] != '\n':

@@ -97,7 +97,16 @@ class Tree:
                 context.execute(self.trees[0].value)
             
             case 'code2':
-                pass
+                context.to_html = self.trees[2].to_html
+                context.execute(f'''
+                var result = "";
+
+                {self.trees[0].value}{{
+                    result += to_html({indentation});
+                }}
+                ''')
+                result = context.eval('result')
+                print(result)
 
             case 'conditional1':
                 # conditional : conditional_begin conditional_middle conditional_final
