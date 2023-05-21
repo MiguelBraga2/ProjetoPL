@@ -106,7 +106,7 @@ class Tree:
                 }}
                 ''')
                 result = context.eval('result')
-                print(result)
+                return result
 
             case 'conditional1':
                 # conditional : conditional_begin conditional_middle conditional_final
