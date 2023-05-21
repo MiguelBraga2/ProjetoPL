@@ -1,7 +1,6 @@
 import ply.yacc as yacc
-from lex_parser import tokens,lexer
+from lex_parser import tokens
 from tree import Tree
-
 
 def p_lines(p):
     """
@@ -11,30 +10,38 @@ def p_lines(p):
     if len(p) == 3: # lines (line1 line2 ...)
         p[0] = p[1].addSubTree(p[2])
     else:
-        p[0] = Tree('lines', '', [p[1]])
+        p[0] = Tree(type='lines', trees=[p[1]])
 
 
 def p_line(p):
     """
     line : tagline
-         | JSCODE
+         | code 
          | comment
          | conditional
          | iteration
          | switch
     """
-    if isinstance(p[1], Tree):
-        p[0] = Tree('line1', '', [p[1]]) 
-    elif isinstance(p[1], str): # JSCODE 
-        p[0] = Tree('line2', '', [Tree('JSCODE', p[1], [])])
+    p[0] = Tree(type='line', trees=[p[1]]) 
 
+
+def p_code(p):
+    """
+    code : JSCODE
+         | JSCODE INDENT lines DEDENT
+    """
+    if len(p) == 2: 
+        p[0] = Tree(type='code1', trees=[Tree(type='JSCODE', value=p[1])])
+    else:
+        p[0] = Tree(type='code2', trees=[Tree(type='JSCODE', value=p[1]), Tree(type='INDENT', value=p[2]), p[3]])
+    
 
 # SWITCH CASE
 def p_switch(p):
     """
     switch : CASE CONDITION INDENT casesdefault DEDENT
     """
-    p[0] = Tree('switch', '', [Tree('CONDITION', p[2], []), Tree('INDENT', p[3], []), p[4]])
+    p[0] = Tree(type='switch', trees=[Tree(type='CONDITION', value=p[2]), Tree(type='INDENT', value=p[3]), p[4]])
 
 def p_casesdefault(p):
     """
@@ -43,11 +50,11 @@ def p_casesdefault(p):
                  | DEFAULT INDENT lines DEDENT
     """
     if len(p) == 6:
-        p[0] = Tree('casesdefault1', '', [ p[1], p[4] ])
+        p[0] = Tree(type='casesdefault1', trees=[p[1], Tree(type='INDENT', value=p[3]), p[4]])
     elif len(p) == 2:
-        p[0] = Tree('casesdefault2', '', [ p[1] ])
+        p[0] = Tree(type='casesdefault2', trees=[p[1]])
     else:
-        p[0] = Tree('casesdefault3', '', [ p[3] ])
+        p[0] = Tree(type='casesdefault3', trees=[Tree(type='INDENT', value=p[2]), p[3]])
 
 def p_cases(p):
     """
@@ -57,13 +64,13 @@ def p_cases(p):
     if len(p) == 3:
         p[0] = p[1].addSubTree(p[2])
     else:   
-        p[0] = Tree('cases', '', [ p[1] ])
+        p[0] = Tree(type='cases', trees=[p[1]])
 
 def p_case(p): 
     """    
     case : WHEN CONDITION INDENT lines DEDENT
     """
-    p[0] = Tree('case', '', [Tree('CONDITION', p[2], []), p[4]])
+    p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2]), Tree(type='INDENT', value=p[3]), p[4]])
 
 
 # COMMENT
@@ -73,9 +80,9 @@ def p_comment(p):
             | COMMENT
     """
     if len(p) == 3: # COMMENT comment_text (Multiple-line comments)
-        p[0] = Tree('comment1', '', [Tree('COMMENT', p[1], []), p[2]])
+        p[0] = Tree(type='comment1', trees=[Tree(type='COMMENT', value=p[1]), p[2]])
     elif len(p) == 2: # COMMENT
-        p[0] = Tree('comment2', '', [Tree('COMMENT', p[1], [])])
+        p[0] = Tree(type='comment2', trees=[Tree(type='COMMENT', value=p[1])])
 
 def p_comment_text(p):
     """
@@ -83,9 +90,9 @@ def p_comment_text(p):
                  | TEXT  
     """
     if len(p) == 3: # comment_text TEXT
-        p[0] = p[1].addSubTree(Tree('TEXT', p[2], []))
+        p[0] = p[1].addSubTree(Tree(type='TEXT', value=p[2]))
     elif len(p) == 2: # TEXT
-        p[0] = Tree('comment_text', '', [Tree('TEXT', p[1], [])])
+        p[0] = Tree('comment_text', '', [Tree(type='TEXT', value=p[1])])
 
 
 # CONDITIONAL
@@ -98,11 +105,11 @@ def p_conditional(p):
     """
 
     if len(p) == 4:
-        p[0] = Tree('conditional1', '', [p[1], p[2], p[3]])    
+        p[0] = Tree(type='conditional1', trees=[p[1], p[2], p[3]])    
     elif len(p) == 3:
-        p[0] = Tree('conditional2', '', [p[1], p[2]])
+        p[0] = Tree(type='conditional2', trees=[p[1], p[2]])
     else:
-        p[0] = Tree('conditional3', '', [p[1]])
+        p[0] = Tree(type='conditional3', trees=[p[1]])
         
 def p_conditional_begin(p):
     """
@@ -112,13 +119,13 @@ def p_conditional_begin(p):
                       | UNLESS CONDITION
     """
     if len(p) == 6 and p[1] == 'if':
-        p[0] = Tree('conditional_begin1', '', [Tree('CONDITION', p[2], []), Tree('INDENT', p[3], []), p[4], Tree('DEDENT', p[5], [])])
+        p[0] = Tree(type='conditional_begin1', trees=[Tree(type='CONDITION', value=p[2]), Tree(type='INDENT', value=p[3]), p[4]])
     elif len(p) == 3 and p[1] == 'if':
-        p[0] = Tree('conditional_begin2', '', [Tree('CONDITION', p[2], []) ])
+        p[0] = Tree(type='conditional_begin2', trees=[Tree(type='CONDITION', value=p[2])])
     elif len(p) == 6:
-        p[0] = Tree('conditional_begin3', '', [Tree('CONDITION', p[2], []), Tree('INDENT', p[3], []), p[4], Tree('DEDENT', p[5], [])])
+        p[0] = Tree(type='conditional_begin3', trees=[Tree(type='CONDITION', value=p[2]), Tree(type='INDENT', value=p[3]), p[4]])
     else:
-        p[0] = Tree('conditional_begin4', '', [Tree('CONDITION', p[2], []) ])
+        p[0] = Tree(type='conditional_begin4', trees=[Tree(type='CONDITION', value=p[2])])
 
 def p_conditional_middle(p):
     """
@@ -128,13 +135,13 @@ def p_conditional_middle(p):
                        | ELSEIF CONDITION
     """
     if len(p) == 8:
-        p[0] = p[1].addSubTree(Tree('CONDITION', p[4] , [Tree('INDENT', p[5], []), p[6], Tree('DEDENT', p[7], [])]) )
+        p[0] = p[1].addSubTree(Tree(type='CONDITION', value=p[4] , trees=[Tree(type='INDENT', value=p[5]), p[6]]))
     elif len(p) == 5:
-        p[0].addSubTree(Tree('CONDITION', p[4] , []))
+        p[0].addSubTree(Tree(type='CONDITION', value=p[4]))
     elif len(p) == 7:
-        p[0] = Tree('conditional_middle', '', [Tree('CONDITION', p[3] , [Tree('INDENT', p[4], []), p[5], Tree('DEDENT', p[6], [])]) ] )
+        p[0] = Tree(type='conditional_middle', trees=[Tree(type='CONDITION', value=p[3] , trees=[Tree(type='INDENT', value=p[4]), p[5]])])
     else:
-        p[0] = Tree('conditional_middle', '', [Tree('CONDITION', p[3] , [])] )
+        p[0] = Tree(type='conditional_middle', trees=[Tree(type='CONDITION', value=p[3])])
 
 def p_conditional_final(p):
     """
@@ -142,9 +149,9 @@ def p_conditional_final(p):
                       | ELSE 
     """
     if len(p) == 5:
-        p[0] = Tree('conditional_final1', '', [Tree('INDENT', p[2], []), p[3], Tree('DEDENT', p[4], [])])
+        p[0] = Tree(type='conditional_final1', trees=[Tree(type='INDENT', value=p[2]), p[3]])
     else:
-        p[0] = Tree('conditional_final2', '', [])
+        p[0] = Tree(type='conditional_final2')
 
 
 # ITERATION
@@ -155,11 +162,11 @@ def p_iteration(p):
               | WHILE CONDITION INDENT lines DEDENT
     """
     if len(p) == 8:
-        p[0] = Tree('iteration1', '', [Tree('IDENTIFIER', p[2], []), Tree('JSCODE', p[4], []), Tree('INDENT', p[5], []), p[6], Tree('DEDENT', p[7], [])])
+        p[0] = Tree(type='iteration1', trees=[Tree(type='IDENTIFIER', value=p[2]), Tree(type='JSCODE', value=p[4]), Tree(type='INDENT', value=p[5]), p[6]])
     elif len(p) == 10:
-        p[0] = Tree('iteration2', '', [Tree('IDENTIFIER', p[2], []), Tree('IDENTIFIER', p[4], []), Tree('JSCODE', p[6], []), Tree('INDENT', p[7], []), p[8], Tree('DEDENT', p[9], [])])
+        p[0] = Tree(type='iteration2', trees=[Tree(type='IDENTIFIER', value=p[2]), Tree(type='IDENTIFIER', value=p[4]), Tree(type='JSCODE', value=p[6]), Tree(type='INDENT', value=p[7]), p[8]])
     else:
-        p[0] = Tree('iteration3', '', [Tree('CONDITION', p[2], []), Tree('INDENT', p[3], []), p[4], Tree('DEDENT', p[5], [])]) 
+        p[0] = Tree(type='iteration3', trees=[Tree(type='CONDITION', value=p[2]), Tree(type='INDENT', value=p[3]), p[4], Tree(type='DEDENT', value=p[5])]) 
 
 
 # TAGS
@@ -173,18 +180,18 @@ def p_tagline(p):
             | tag
     """
     if len(p) == 6: # tag content INDENT lines DEDENT
-        p[0] = Tree('tagline1', '', [p[1], p[2], Tree('INDENT', p[3], []), p[4], Tree('DEDENT', p[5], [])])
+        p[0] = Tree(type='tagline1', trees=[p[1], p[2], Tree(type='INDENT', value=p[3]), p[4]])
     elif len(p) == 5: # tag INDENT lines DEDENT
-        p[0] = Tree('tagline2', '', [p[1], Tree('INDENT', p[2], []), p[3], Tree('DEDENT', p[4], [])])
+        p[0] = Tree(type='tagline2', trees=[p[1], Tree(type='INDENT', value=p[2]), p[3]])
     elif len(p) == 3: 
         if p[2] == '/': # tag BAR
-            p[0] = Tree('tagline4', '', [p[1], Tree('BAR', p[2], [])])
+            p[0] = Tree(type='tagline4', trees=[p[1], Tree(type='BAR', value=p[2])])
         else: # tag content
-            p[0] = Tree('tagline3', '', [p[1], p[2]])
+            p[0] = Tree(type='tagline3', trees=[p[1], p[2]])
     elif len(p) == 4: # tag DOT text
-        p[0] = Tree('tagline5', '', [p[1], p[3]])
+        p[0] = Tree(type='tagline5', trees=[p[1], p[3]])
     else: # tag
-        p[0] = Tree('tagline6', '', [p[1]])
+        p[0] = Tree(type='tagline6', trees=[p[1]])
 
 def p_tag_tag(p):
     """
@@ -192,9 +199,9 @@ def p_tag_tag(p):
         | TAG 
     """
     if len(p) == 3:
-        p[0] = Tree('tag1', '', [Tree('TAG', p[1], []), p[2]])
+        p[0] = Tree(type='tag1', trees=[Tree(type='TAG', value=p[1]), p[2]])
     else:
-        p[0] = Tree('tag2', '', [Tree('TAG', p[1], [])])
+        p[0] = Tree(type='tag2', trees=[Tree(type='TAG', value=p[1])])
     
 def p_tag_class(p):
     """
@@ -202,9 +209,9 @@ def p_tag_class(p):
         | CLASS 
     """
     if len(p) == 3:
-        p[0] = Tree('tag3', '', [Tree('CLASS', p[1], []), p[2]])
+        p[0] = Tree(type='tag3', trees=[Tree(type='CLASS', value=p[1]), p[2]])
     else:
-        p[0] = Tree('tag4', '', [])
+        p[0] = Tree(type='tag4')
 
 def p_tag_id(p):
     """
@@ -212,9 +219,9 @@ def p_tag_id(p):
         | ID   
     """
     if len(p) == 3:
-        p[0] = Tree('tag5', '', [Tree('ID', p[1], []), p[2]])
+        p[0] = Tree(type='tag5', trees=[Tree(type='ID', value=p[1]), p[2]])
     else:
-        p[0] = Tree('tag6', '', [])
+        p[0] = Tree(type='tag6')
 
 def p_attributes(p):
     """
@@ -225,17 +232,17 @@ def p_attributes(p):
                | ID
     """
     if len(p) == 4:
-        p[0] == Tree('attributes1', '', [p[1], Tree('ID', p[2], []) , p[3]])
+        p[0] == Tree(type='attributes1', trees=[p[1], Tree(type='ID', value=p[2]) , p[3]])
     elif len(p) == 3:
         if type(p[1]) == str:
-            p[0] = Tree('attributes2', '', [Tree('ID', p[1], []) , p[2]])
+            p[0] = Tree(type='attributes2', trees=[Tree(type='ID', value=p[1]) , p[2]])
         else:
-            p[0] = Tree('attributes3', '', [p[1], Tree('ID', p[2], [])])
+            p[0] = Tree(type='attributes3', trees=[p[1], Tree(type='ID', value=p[2])])
     else:
         if type(p[1]) == str:
-            p[0] = Tree('attributes4', '', [Tree('ID', p[1], [])])
+            p[0] = Tree(type='attributes4', trees=[Tree(type='ID', value=p[1])])
         else:
-            p[0] = Tree('attributes5', '', [p[1]])           
+            p[0] = Tree(type='attributes5', trees=[p[1]])           
 
 def p_attributes_list(p):
     """
@@ -245,19 +252,19 @@ def p_attributes_list(p):
     if len(p) == 3:
         p[0] = p[1].addSubTree(p[2])
     else:
-        p[0] = Tree('attribute_list', '', [p[1]])   
+        p[0] = Tree(type='attribute_list', trees=[p[1]])   
 
 def p_attribute_class(p):
     """
     attribute : CLASS
     """
-    p[0] = Tree('CLASS', p[1], [])
+    p[0] = Tree(type='CLASS', value=p[1])
 
 def p_attribute_attributes(p):
     """
     attribute : ATTRIBUTES
     """
-    p[0] = Tree('ATTRIBUTES', p[1], [])
+    p[0] = Tree(type='ATTRIBUTES', value=p[1])
 
 def p_content(p):
     """           
@@ -265,9 +272,9 @@ def p_content(p):
             | text
     """
     if len(p) == 3: # EQUALS interpolation
-        p[0] = Tree('content1', '', [Tree('JSCODE', p[2], [])])
+        p[0] = Tree(type='content1', trees=[Tree(type='JSCODE', value=p[2])])
     elif len(p) == 2: # text
-        p[0] = Tree('content2', '', [p[1]])
+        p[0] = Tree(type='content2', trees=[p[1]])
 
 def p_interpolation(p):
     """
@@ -276,11 +283,11 @@ def p_interpolation(p):
                   | NUMBER
     """
     if p[1][0] == '"': # STRING
-        p[0] = Tree('interpolation1', '', [Tree('STRING', p[1][1:-1], [])])
+        p[0] = Tree(type='interpolation1', trees=[Tree(type='STRING', value=p[1][1:-1])])
     elif p[1][0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']: # NUMBER
-        p[0] = Tree('interpolation3', '', [Tree('NUMBER', p[1], [])])
+        p[0] = Tree(type='interpolation3', trees=[Tree(type='NUMBER', value=p[1])])
     else: # IDENTIFIER
-        p[0] = Tree('interpolation2', '', [Tree('IDENTIFIER', p[1], [])])
+        p[0] = Tree(type='interpolation2', trees=[Tree(type='IDENTIFIER', value=p[1])])
     
 
 def p_text(p):
@@ -293,11 +300,11 @@ def p_text(p):
     if len(p) == 5: # text BEGININTERP interpolation ENDINTERP
         p[0] = p[1].addSubTree(p[3])
     elif len(p) == 3: # text TEXT
-        p[0] = p[1].addSubTree(Tree('TEXT', p[2], []))
+        p[0] = p[1].addSubTree(Tree(type='TEXT', value=p[2]))
     elif len(p) == 4: # BEGININTERP interpolation ENDINTERP
-        p[0] = Tree('text', '', [p[2]])
+        p[0] = Tree(type='text', trees=[p[2]])
     else: # TEXT
-        p[0] = Tree('text', '', [Tree('TEXT', p[1], [])])
+        p[0] = Tree(type='text', trees=[Tree(type='TEXT', value=p[1])])
 
 def p_error(p):
     if p:
@@ -308,7 +315,6 @@ def p_error(p):
 def encontra_coluna(token):
     linha_inicio = lexer.lexdata.rfind('\n', 0, token.lexpos) + 1
     return (token.lexpos - linha_inicio) + 1
-
 
 
 parser = yacc.yacc(debug=True)

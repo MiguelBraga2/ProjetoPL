@@ -1,12 +1,8 @@
 from yacc_parser import parser
 
 data = """
-<ul>
-<li>
-<p>Ola Mundo!</p>
-</li>
-</ul>
-<p>Fora da lista</p>
+each x in [1,2,3]
+  li= x
 """
 
 if data[-1] != '\n':

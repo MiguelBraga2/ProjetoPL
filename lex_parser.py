@@ -380,7 +380,7 @@ def t_DOT(t):
 
 # Define a rule for the TEXT token
 def t_TEXT(t):
-    r'[ \t]+[^\n\#]*((?!(\#\{))\#[^\n\#]+)*|<.*?>|(?<=})[^\n\#]+((?!(\#\{))\#[^\n\#]+)*'
+    r'.+?\#\{|<.*?>|.+'
     if t.value.isspace():
         return
     return t
@@ -399,7 +399,7 @@ def t_ignorecomment_TEXT(t):
 
 # Define a rule for the block text
 def t_block_TEXT(t):
-    r'[^\n\#]+((?!(\#\{))\#[^\n\#]+)*'
+    r'.+?\#\{|.+'
     return t
 
 

@@ -3,11 +3,14 @@ lines : lines line
       | line
 
 line : tagline
-     | JSCODE
+     | code
      | comment
      | conditional
      | iteration
      | switch
+
+code : JSCODE
+     | JSCODE INDENT lines DEDENT
 
 switch : CASE CONDITION INDENT casesdefault DEDENT
 
