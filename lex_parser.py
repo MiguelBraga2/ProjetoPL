@@ -57,6 +57,7 @@ states = (
     ('block', 'exclusive'),
     ('conditional', 'exclusive'),
     ('iteration', 'exclusive'),
+    ('code', 'exclusive')
 )
 
 
@@ -123,6 +124,27 @@ def t_ignorecomment_indentation(t):
         t.lexer.lineno += 1
         return
 
+
+# Define a rule for the indentation in the code state
+def t_code_indentation(t):
+    r'\n[ \t]*'
+
+    # get the indentation level
+    current_indentation = indetation_level(t.value[1:])
+    # get the previous indentation level
+    previous_indentation = t.lexer.indent_stack[-1]
+    
+    if previous_indentation == current_indentation:
+        t.lexer.lineno += 1
+        t.lexer.begin('INITIAL')
+        return 
+    elif previous_indentation > current_indentation: 
+        t.lexer.skip(-len(t.value))
+        t.lexer.begin('INITIAL')
+        return
+    else:
+        t.lexer.lineno += 1
+        return
 
 # Define a rule for the indentation in the comment state
 def t_comment_indentation(t):
@@ -249,6 +271,7 @@ def t_EQUALS(t):
 def t_JSCODE(t):
     r'\-.*'
     t.value = t.value[1:]
+    t.lexer.begin('code')
     return t
 
 
@@ -392,6 +415,12 @@ def t_comment_TEXT(t):
     return t
 
 
+# Define a rule for the javascript code
+def t_code_JSCODE(t):
+    r'.+'
+    return t
+
+
 # Define a rule for the ignorecomment text
 def t_ignorecomment_TEXT(t):
     r'.+'
@@ -420,6 +449,7 @@ t_ignore = ''
 t_assign_ignore = ' \t'
 t_ignorecomment_ignore = ''
 t_comment_ignore = ''
+t_code_ignore = ''
 t_attributes_ignore = ' \t\n'
 t_interpolation_ignore = ' \t'
 t_conditional_ignore = ' \t'

@@ -9,8 +9,11 @@ line : tagline
      | iteration
      | switch
 
-code : JSCODE
-     | JSCODE INDENT lines DEDENT
+code : code_lines
+     | code_lines INDENT lines DEDENT
+
+code_lines : JSCODE
+           | code_lines JSCODE
 
 switch : CASE CONDITION INDENT casesdefault DEDENT
 
@@ -61,7 +64,7 @@ tagline : tag content INDENT lines DEDENT
 
 tag : TAG attributes
     | TAG 
-    | CLASS attribute_list
+    | CLASS attributes
     | CLASS 
     | ID attribute_list
     | ID     

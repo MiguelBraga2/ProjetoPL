@@ -94,14 +94,22 @@ class Tree:
                 string += self.trees[0].to_html(indentation) 
 
             case 'code1':
-                context.execute(self.trees[0].value)
-            
+                code = ""
+                for tree in self.trees[0].trees:
+                    code += tree.value
+                
+                context.execute(code)
+
             case 'code2':
+                code = ""
+                for tree in self.trees[0].trees:
+                    code += tree.value
+                                
                 context.to_html = self.trees[2].to_html
                 context.execute(f'''
                 var result = "";
 
-                {self.trees[0].value}{{
+                {code}{{
                     result += to_html({indentation});
                 }}
                 ''')
