@@ -1,5 +1,5 @@
 import ply.yacc as yacc
-from lex_parser import tokens
+from lex_parser import tokens,lexer
 from tree import Tree
 
 def p_lines(p):
@@ -22,7 +22,7 @@ def p_line(p):
          | iteration
          | switch
     """
-    p[0] = Tree(type='line', trees=[p[1]]) 
+    p[0] = Tree(type='line1', trees=[p[1]]) 
 
 
 def p_code(p):
