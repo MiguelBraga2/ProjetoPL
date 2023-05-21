@@ -1,10 +1,11 @@
 from lex_parser import lexer
 
 data = """
-//- will not output within markup
-// will output within markup
-p foo
-p bar
+-
+  var list = ["Uno", "Dos", "Tres",
+          "Cuatro", "Cinco", "Seis"]
+each item in list
+  li= item
 """
 
 lexer.input(data)

@@ -27,14 +27,24 @@ def p_line(p):
 
 def p_code(p):
     """
-    code : JSCODE
-         | JSCODE INDENT lines DEDENT
+    code : code_lines
+         | code_lines INDENT lines DEDENT
     """
     if len(p) == 2: 
-        p[0] = Tree(type='code1', trees=[Tree(type='JSCODE', value=p[1])])
+        p[0] = Tree(type='code1', trees=[p[1]])
     else:
-        p[0] = Tree(type='code2', trees=[Tree(type='JSCODE', value=p[1]), Tree(type='INDENT', value=p[2]), p[3]])
+        p[0] = Tree(type='code2', trees=[p[1], Tree(type='INDENT', value=p[2]), p[3]])
     
+def p_code_lines(p):
+    """
+    code_lines : JSCODE
+               | code_lines JSCODE
+    """
+    if len(p) == 3: 
+        p[0] = p[1].addSubTree(Tree(type='JSCODE', value=p[2]))
+    else:
+        p[0] = Tree(type='code_lines', trees=[Tree(type='JSCODE', value=p[1])])
+
 
 # SWITCH CASE
 def p_switch(p):
