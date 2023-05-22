@@ -233,6 +233,7 @@ def t_block_indentation(t): # Rever
 # Define a rule to enter the attributes state
 def t_lparen(t):
     r'\('
+    t.lexer.newline = False
     t.lexer.begin('attributes')
 
 
@@ -240,6 +241,7 @@ def t_lparen(t):
 def t_attributes_ATTRIBUTES(t):
     r'[^\)\(]*[\(\)]'
     t.lexer.attributesBuffer += t.value
+    t.lexer.newline = False
     if t.value[-1] == '(':
         t.lexer.parCount+=1
     elif t.value[-1] == ')':
@@ -255,12 +257,14 @@ def t_attributes_ATTRIBUTES(t):
 # Define a rule for the unbuffered comments
 def t_ignorecomment(t):
     r'//-.*'
+    t.lexer.newline = False
     t.lexer.begin('ignorecomment')
 
 
 # Define a rule for the comments
 def t_COMMENT(t):
     r'//.*'
+    t.lexer.newline = False
     t.lexer.begin('comment')
     return t
 
@@ -268,12 +272,14 @@ def t_COMMENT(t):
 # Define a rule for the BAR symbol
 def t_BAR(t):
     r'\/'
+    t.lexer.newline = False
     return t
 
 
 # Define a rule for the EQUALS symbol
 def t_EQUALS(t):
     r'\='
+    t.lexer.newline = False
     t.lexer.push_state('assign')
     return t
 
@@ -281,14 +287,17 @@ def t_EQUALS(t):
 # Define a rule for the JSCODE 
 def t_JSCODE(t):
     r'\-.*'
+    t.lexer.newline = False
     t.value = t.value[1:]
-    t.lexer.begin('code')
+    if t.value.isspace():
+        t.lexer.begin('code')
     return t
 
 
 # Define a rule for the STYLE 
 def t_assign_STYLE(t):
     r'\{[^\}]*\}'
+    t.lexer.newline = False
     t.value = t.value.replace(" ", "")
     t.value = t.value.replace(",", ";")
     t.value = t.value.replace("'", "")
@@ -301,6 +310,7 @@ def t_assign_STYLE(t):
 # Define a rule for the JSCODE in assign state 
 def t_assign_JSCODE(t):
     r'.+'
+    t.lexer.newline = False
     t.lexer.pop_state()
     return t
 
@@ -308,6 +318,7 @@ def t_assign_JSCODE(t):
 #  Define a rule for the begin interpolation symbols
 def t_BEGININTERP(t):
     r'\#\{'
+    t.lexer.newline = False
     t.lexer.push_state('interpolation')
     return t
 
@@ -315,24 +326,28 @@ def t_BEGININTERP(t):
 #  Define a rule for the STRING
 def t_interpolation_STRING(t):
     r'\'[^\']*\'|"[^\"]*"'
+    t.lexer.newline = False
     return t
 
 
 #  Define a rule for the NUMBER
 def t_interpolation_NUMBER(t):
     r'\d+'
+    t.lexer.newline = False
     return t
 
 
 #  Define a rule for the IDENTIFIER
 def t_interpolation_IDENTIFIER(t):
     r'\w+'
+    t.lexer.newline = False
     return t
 
 
 #  Define a rule for the end interpolation symbol
 def t_interpolation_ENDINTERP(t):
     r'\}'
+    t.lexer.newline = False
     t.lexer.pop_state()
     return t
 
@@ -341,24 +356,28 @@ def t_interpolation_ENDINTERP(t):
 def t_iteration_JSCODE(t):
     r'(?<=(in\s)).*'
     t.lexer.begin('INITIAL')
+    t.lexer.newline = False
     return t 
 
 
 #  Define a rule for the COMA symbol
 def t_iteration_COMMA(t):
     r','
+    t.lexer.newline = False
     return t
 
 
 #  Define a rule for the IN word
 def t_iteration_IN(t):
     r'in\b'
+    t.lexer.newline = False
     return t
 
 
 #  Define a rule for the IDENTIFIER
 def t_iteration_IDENTIFIER(t):
     r'\w+'
+    t.lexer.newline = False
     return t
 
 
@@ -366,6 +385,7 @@ def t_iteration_IDENTIFIER(t):
 def t_conditional_CONDITION(t):
     r'.+'
     t.lexer.begin('INITIAL')
+    t.lexer.newline = False
     return t
 
 
@@ -373,6 +393,7 @@ def t_conditional_CONDITION(t):
 def t_ELSEIF(t):
     r'else[ ]if'
     t.lexer.begin('conditional')
+    t.lexer.newline = False
     return t
 
 
@@ -380,6 +401,7 @@ def t_ELSEIF(t):
 def t_TAG(t):
     r'[a-z][a-z0-9]*'
     t.type = reserved.get(t.value, 'TAG')
+    t.lexer.newline = False
     
     match t.type:
         case 'UNLESS' | 'WHILE' | 'CASE' | 'WHEN' | 'IF':
@@ -423,12 +445,14 @@ def t_CLASS(t):
 def t_DOT(t):
     r'\.'
     t.lexer.begin('block')
+    t.lexer.newline = False
     return t
     
 
 # Define a rule for the TEXT token
 def t_TEXT(t):
     r'.+?\#\{|<.*?>|.+'
+    t.lexer.newline = False
     if t.value.isspace():
         return
     return t
@@ -437,23 +461,27 @@ def t_TEXT(t):
 # Define a rule for the comment text 
 def t_comment_TEXT(t):
     r'.+'
+    t.lexer.newline = False
     return t
 
 
 # Define a rule for the javascript code
-def t_code_JSCODE(t):
+def t_code_TEXT(t):
     r'.+'
+    t.lexer.newline = False
     return t
 
 
 # Define a rule for the ignorecomment text
 def t_ignorecomment_TEXT(t):
     r'.+'
+    t.lexer.newline = False
 
 
 # Define a rule for the block text
 def t_block_TEXT(t):
     r'.+?\#\{|.+'
+    t.lexer.newline = False
     return t
 
 
@@ -461,6 +489,7 @@ def t_block_TEXT(t):
 def t_block_BEGININTERP(t):
     r'\#\{'
     t.lexer.push_state('interpolation')
+    t.lexer.newline = False
     return t
 
 

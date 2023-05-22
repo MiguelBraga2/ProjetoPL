@@ -1,9 +1,8 @@
 from yacc_parser import parser
 
 data = """
-.class1
-  .class3
-.class2
+- for (var x = 0; x < 3; x++)
+  li item
 """
 
 if data[-1] != '\n':

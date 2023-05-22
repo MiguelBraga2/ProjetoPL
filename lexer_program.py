@@ -1,10 +1,8 @@
 from lex_parser import lexer
 
 data = """
-// just some paragraphs
-       ola manos
-#id foo
-#ola bar
+- for (var x = 0; x < 3; x++)
+  li item
 """
 
 lexer.input(data)

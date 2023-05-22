@@ -12,8 +12,11 @@ line : tagline
 code : code_lines
      | code_lines INDENT lines DEDENT
 
-code_lines : JSCODE
-           | code_lines JSCODE
+code_lines : JSCODE 
+           | JSCODE code_text 
+
+code_text : TEXT 
+          | code_text TEXT 
 
 switch : CASE CONDITION INDENT casesdefault DEDENT
 

@@ -82,6 +82,18 @@ class Tree:
                 return classes, None, attributes 
 
 
+    def get_code(self):
+        code = ''
+        match self.type:
+            case 'code_lines1':
+                code += self.trees[0].value
+            case 'code_lines2':
+                code += self.trees[0].value
+                for tree in self.trees[1].trees:
+                    code += tree.value
+                
+        return code
+
     def to_html(self, indentation="\n", condition=""):
         string = ""
 
@@ -94,17 +106,12 @@ class Tree:
                 string += self.trees[0].to_html(indentation) 
 
             case 'code1':
-                code = ""
-                for tree in self.trees[0].trees:
-                    code += tree.value
-                
+                code = self.trees[0].get_code()
                 context.execute(code)
 
             case 'code2':
-                code = ""
-                for tree in self.trees[0].trees:
-                    code += tree.value
-                                
+                code = self.trees[0].get_code()
+                
                 context.to_html = self.trees[2].to_html
                 context.execute(f'''
                 var result = "";
@@ -280,7 +287,7 @@ class Tree:
             
             case 'tag1': 
                 # tag : TAG attributes
-                if self.trees[0].value == 'div' and self.tree[1].trees[0].type == 'ATTRIBUTES':
+                if self.trees[0].value == 'div' and self.trees[1].trees[0].type == 'ATTRIBUTES':
                     raise ValueError('unexpected token "attributes"')
 
                 classes, id, attributes = self.trees[1].to_html_attributes()

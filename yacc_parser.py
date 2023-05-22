@@ -16,7 +16,7 @@ def p_lines(p):
 def p_line(p):
     """
     line : tagline
-         | code 
+         | code
          | comment
          | conditional
          | iteration
@@ -37,13 +37,23 @@ def p_code(p):
     
 def p_code_lines(p):
     """
-    code_lines : JSCODE
-               | code_lines JSCODE
+    code_lines : JSCODE 
+               | JSCODE code_text 
     """
-    if len(p) == 3: 
-        p[0] = p[1].addSubTree(Tree(type='JSCODE', value=p[2]))
+    if len(p) == 2: 
+        p[0] = Tree(type='code_lines1', trees=[Tree(type='JSCODE', value=p[1])])
     else:
-        p[0] = Tree(type='code_lines', trees=[Tree(type='JSCODE', value=p[1])])
+        p[0] = Tree(type='code_lines2', trees=[Tree(type='JSCODE', value=p[1]), p[2]])
+
+def p_code_text(p):
+    """
+    code_text : TEXT 
+              | code_text TEXT 
+    """
+    if len(p) == 2: 
+        p[0] = Tree(type='code_text', trees=[Tree(type='TEXT', value=p[1])])
+    else:
+        p[0] = p[1].addSubTree(Tree(type='TEXT', value=p[2]))
 
 
 # SWITCH CASE
@@ -203,7 +213,7 @@ def p_tagline(p):
     else: # tag
         p[0] = Tree(type='tagline6', trees=[p[1]])
 
-def p_tag(p):
+def p_tag_tag(p):
     """
     tag : TAG attributes
         | TAG 
