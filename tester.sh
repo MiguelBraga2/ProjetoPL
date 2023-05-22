@@ -11,7 +11,7 @@ output_dir="./output_files"
 diff_dir="./diff_files"
 
 # Set the path to the program to be tested
-program_path="python3 yacc_parser.py"
+program_path="python3 program.py"
 
 # Iterate over all the .txt files in the input directory
 for input_file in ${input_dir}/*.txt

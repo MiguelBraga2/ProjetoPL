@@ -289,7 +289,7 @@ def t_JSCODE(t):
     r'\-.*'
     t.lexer.newline = False
     t.value = t.value[1:]
-    if t.value.isspace():
+    if t.value.isspace() or t.value == "":
         t.lexer.begin('code')
     return t
 
@@ -399,7 +399,7 @@ def t_ELSEIF(t):
 
 # Define a rule for the TAG token
 def t_TAG(t):
-    r'[a-z][a-z0-9]*'
+    r'(?<=\s)[a-z][a-z0-9]*'
     t.type = reserved.get(t.value, 'TAG')
     t.lexer.newline = False
     
@@ -451,7 +451,7 @@ def t_DOT(t):
 
 # Define a rule for the TEXT token
 def t_TEXT(t):
-    r'.+?\#\{|<.*?>|.+'
+    r'.+?(?=\#\{)|<.*?>|.+'
     t.lexer.newline = False
     if t.value.isspace():
         return

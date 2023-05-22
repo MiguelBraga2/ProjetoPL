@@ -215,11 +215,18 @@ class Tree:
                 # iteration : EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
                 context.execute('iteration2 = ' + self.trees[2].value)
                 iterator = context.eval('iteration2')
+                aux = context.eval('Array.isArray(iteration2)')
+                i = 0
                 for val in iterator:
                     if type(val) == str:
                         val = '"' + val + '"'
-                    context.execute(self.trees[0].value + ' = ' + val)
-                    context.execute(self.trees[1].value + ' = ' + 'iteration2[' + str(val) + ']')
+                    context.execute(self.trees[1].value + ' = ' + val)
+                    if not aux:
+                        context.execute(self.trees[0].value + ' = ' + 'iteration2[' + str(val) + ']')
+                    else:
+                        context.execute(self.trees[0].value + ' = ' + str(i))
+        
+                    i += 1
                     string += self.trees[4].to_html(indentation)
 
             case 'iteration3':
@@ -275,7 +282,7 @@ class Tree:
                 # tagline : tag DOT text
                 tag = self.trees[0].to_html(indentation)
                 aux = tag.split()
-                tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
+                tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1]
                 string += indentation + tag + self.trees[1].to_html(indentation+" ") + indentation + '</' + tag_name + '>' 
 
             case 'tagline6': 
@@ -314,7 +321,10 @@ class Tree:
                 
             case 'content1': 
                 # content : EQUALS JSCODE
-                string += str(context.eval(self.trees[0].value)) 
+                try:
+                    string += str(context.eval(self.trees[0].value)) 
+                except:
+                    pass
             
             case 'content2': 
                 # content : text
@@ -352,7 +362,7 @@ class Tree:
                 string += self.trees[2].to_html(indentation, cond)
 
             case 'casesdefault1':
-                default = self.trees[1]
+                default = self.trees[2]
                 
                 result = False
 

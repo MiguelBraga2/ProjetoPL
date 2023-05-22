@@ -1,8 +1,17 @@
 from lex_parser import lexer
 
 data = """
-- for (var x = 0; x < 3; x++)
-  li item
+<!--[if IE 8]>
+<html lang="en" class="lt-ie9">
+<![endif]-->
+<!--[if gt IE 8]><!-->
+<html lang="en">
+<!--<![endif]-->
+
+body
+  p Supporting old web browsers is a pain.
+
+</html>
 """
 
 lexer.input(data)
