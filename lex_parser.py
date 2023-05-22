@@ -81,6 +81,8 @@ def t_INITIAL_indentation(t):
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
+    t.lexer.newline = True
+
     if previous_indentation == current_indentation:
         t.lexer.lineno += 1 
         return 
@@ -111,6 +113,8 @@ def t_ignorecomment_indentation(t):
     current_indentation = indetation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
+
+    t.lexer.newline = True
     
     if previous_indentation == current_indentation:
         t.lexer.lineno += 1
@@ -133,6 +137,8 @@ def t_code_indentation(t):
     current_indentation = indetation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
+
+    t.lexer.newline = True
     
     if previous_indentation == current_indentation:
         t.lexer.lineno += 1
@@ -154,6 +160,8 @@ def t_comment_indentation(t):
     current_indentation = indetation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
+
+    t.lexer.newline = True
 
     if previous_indentation == current_indentation:
         t.lexer.begin('INITIAL')
@@ -191,8 +199,11 @@ def t_block_indentation(t): # Rever
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
+    t.lexer.newline = True
+
     if previous_indentation == current_indentation:
         t.lexer.begin('INITIAL')
+        t.lexer
         t.lexer.lineno += 1
         return 
     elif previous_indentation > current_indentation:
@@ -383,6 +394,13 @@ def t_TAG(t):
 # Define a rule for the ID token
 def t_ID(t):
     r'\#\w+'
+    if t.lexer.newline:
+        t.lexer.skip(-len(t.value))
+        t.type = 'TAG'
+        t.value = 'div'
+        t.lexer.newline = False
+        return t
+    
     t.value = t.value[1:]
     return t
 
@@ -390,6 +408,13 @@ def t_ID(t):
 # Define a rule for the CLASS token
 def t_CLASS(t):
     r'\.\w+'
+    if t.lexer.newline:
+        t.lexer.skip(-len(t.value))
+        t.type = 'TAG'
+        t.value = 'div'
+        t.lexer.newline = False
+        return t
+    
     t.value = t.value[1:]
     return t
 
@@ -461,3 +486,4 @@ lexer = lex.lex()
 lexer.indent_stack = [0]
 lexer.parCount = 0
 lexer.attributesBuffer = ""
+lexer.newline = True

@@ -280,6 +280,9 @@ class Tree:
             
             case 'tag1': 
                 # tag : TAG attributes
+                if self.trees[0].value == 'div' and self.tree[1].trees[0].type == 'ATTRIBUTES':
+                    raise ValueError('unexpected token "attributes"')
+
                 classes, id, attributes = self.trees[1].to_html_attributes()
                 atts = ' '.join([f'{chave}="{valor}"' for chave, valor in attributes.items()])
         
@@ -287,6 +290,7 @@ class Tree:
                     atts = ' ' + atts
                 
                 cls = " ".join(classes)
+    
 
                 if id == None and cls == '': 
                     string += f'<{self.trees[0].value}{atts}>'
@@ -301,37 +305,6 @@ class Tree:
                 # tag : TAG
                 string += f'<{self.trees[0].value}>'
                 
-            case 'tag3': 
-                # tag : CLASS attributes
-                classes, id, attributes = self.trees[1].to_html_attributes()
-                classes.append(self.trees[0].value)
-                atts = ' '.join([f'{chave}="{valor}"' for chave, valor in attributes.items()])
-                if atts != '':
-                    atts = ' ' + atts
-                
-                if id == None: 
-                    string += f'<div class="{" ".join(classes)}"{atts}>'
-                else:
-                    string += f'<div class="{" ".join(classes)}"{atts} id="{id}">'
-                
-                
-            case 'tag4': 
-                # tag : CLASS
-                string += f'<div class="{self.trees[0].value}">'
-
-            case 'tag5': 
-                # tag : ID attribute_list
-                classes, attributes = self.trees[1].to_html_attribute_list()
-                id = self.trees[0].value
-                atts = ' '.join([f'{chave}="{valor}"' for chave, valor in attributes.items()])
-                if atts != '':
-                    atts = ' ' + atts + ' '
-                string += f'<div class="{" ".join(classes)}"{atts}id="{id}">'
-
-            case 'tag6': 
-                # tag : ID 
-                string += f'<div id="{self.trees[0].value}">'
-            
             case 'content1': 
                 # content : EQUALS JSCODE
                 string += str(context.eval(self.trees[0].value)) 

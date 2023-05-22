@@ -64,10 +64,6 @@ tagline : tag content INDENT lines DEDENT
 
 tag : TAG attributes
     | TAG 
-    | CLASS attributes
-    | CLASS 
-    | ID attribute_list
-    | ID
 
 attributes : attribute_list ID attribute_list
            | attribute_list ID

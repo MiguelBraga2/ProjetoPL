@@ -203,7 +203,7 @@ def p_tagline(p):
     else: # tag
         p[0] = Tree(type='tagline6', trees=[p[1]])
 
-def p_tag_tag(p):
+def p_tag(p):
     """
     tag : TAG attributes
         | TAG 
@@ -213,26 +213,6 @@ def p_tag_tag(p):
     else:
         p[0] = Tree(type='tag2', trees=[Tree(type='TAG', value=p[1])])
     
-def p_tag_class(p):
-    """
-    tag : CLASS attributes
-        | CLASS 
-    """
-    if len(p) == 3:
-        p[0] = Tree(type='tag3', trees=[Tree(type='CLASS', value=p[1]), p[2]])
-    else:
-        p[0] = Tree(type='tag4', trees=[Tree(type='CLASS', value=p[1])])
-
-def p_tag_id(p):
-    """
-    tag : ID attribute_list
-        | ID   
-    """
-    if len(p) == 3:
-        p[0] = Tree(type='tag5', trees=[Tree(type='ID', value=p[1]), p[2]])
-    else:
-        p[0] = Tree(type='tag6', trees=[Tree(type='ID', value=p[1])])
-
 def p_attributes(p):
     """
     attributes : attribute_list ID attribute_list

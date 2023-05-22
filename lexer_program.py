@@ -1,11 +1,10 @@
 from lex_parser import lexer
 
 data = """
--
-  var list = ["Uno", "Dos", "Tres",
-          "Cuatro", "Cinco", "Seis"]
-each item in list
-  li= item
+// just some paragraphs
+       ola manos
+#id foo
+#ola bar
 """
 
 lexer.input(data)
