@@ -1,8 +1,9 @@
 from yacc_parser import parser
 
 data = """
-- for (var x = 0; x < 3; x++)
-  li item
+ul
+  each val, key in {1: 'one', 2: 'two', 3: 'three'}
+    li= key + ': ' + val
 """
 
 if data[-1] != '\n':
