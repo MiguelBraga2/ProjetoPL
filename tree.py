@@ -203,8 +203,7 @@ class Tree:
                 
             case 'iteration1':
                 # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
-                context.execute('iteration1 = ' + self.trees[1].value)
-                iterator = context.eval('iteration1')
+                iterator = context.eval(self.trees[1].value)
                 for val in iterator:
                     if type(val) == str:
                         val = '"' + val + '"'
