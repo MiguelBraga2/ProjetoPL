@@ -289,19 +289,25 @@ def p_interpolation(p):
     else: # IDENTIFIER
         p[0] = Tree(type='interpolation2', trees=[Tree(type='IDENTIFIER', value=p[1])])
     
+def p_interp(p):
+    """
+    interp : interpolation
+           | tagline
+    """
+    p[0] = p[1]
 
 def p_text(p):
     """
-    text : text BEGININTERP interpolation ENDINTERP
+    text : text BEGININTERP interp ENDINTERP
          | text TEXT
-         | BEGININTERP interpolation ENDINTERP
+         | BEGININTERP interp ENDINTERP
          | TEXT
     """
-    if len(p) == 5: # text BEGININTERP interpolation ENDINTERP
+    if len(p) == 5: # text BEGININTERP interp ENDINTERP
         p[0] = p[1].addSubTree(p[3])
     elif len(p) == 3: # text TEXT
         p[0] = p[1].addSubTree(Tree(type='TEXT', value=p[2]))
-    elif len(p) == 4: # BEGININTERP interpolation ENDINTERP
+    elif len(p) == 4: # BEGININTERP interp ENDINTERP
         p[0] = Tree(type='text', trees=[p[2]])
     else: # TEXT
         p[0] = Tree(type='text', trees=[Tree(type='TEXT', value=p[1])])

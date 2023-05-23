@@ -87,7 +87,10 @@ interpolation : VARIABLE
               | STRING 
               | NUMBER
 
-text : text BEGININTERP interpolation ENDINTERP
+text : text BEGININTERP interp ENDINTERP
      | text TEXT
-     | BEGININTERP interpolation ENDINTERP
+     | BEGININTERP interp ENDINTERP
      | TEXT
+
+interp : interpolation
+       | tagline

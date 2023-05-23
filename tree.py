@@ -369,7 +369,7 @@ class Tree:
             case 'content2': 
                 # content : text
                 aux = self.trees[0].to_html("")
-                if not self.trees[0].trees[0].type.startswith('interpolation'):
+                if not self.trees[0].trees[0].type.startswith('interpolation') and not self.trees[0].trees[0].type.startswith('tagline'):
                     aux = aux[1:]
                 string += aux
             
@@ -391,7 +391,8 @@ class Tree:
             
             case 'text':
                 for subtree in self.trees:
-                    string += indentation + subtree.to_html(indentation)
+                    subtree_html = subtree.to_html(indentation)
+                    string += indentation + subtree_html
             
             case 'TEXT':
                 string += self.value

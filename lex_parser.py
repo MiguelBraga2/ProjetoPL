@@ -57,7 +57,8 @@ states = (
     ('block', 'exclusive'),
     ('conditional', 'exclusive'),
     ('iteration', 'exclusive'),
-    ('code', 'exclusive')
+    ('code', 'exclusive'),
+    ('taginterpolation', 'inclusive')
 )
 
 
@@ -118,11 +119,11 @@ def t_ignorecomment_indentation(t):
     
     if previous_indentation == current_indentation:
         t.lexer.lineno += 1
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         return 
     elif previous_indentation > current_indentation: 
         t.lexer.skip(-len(t.value))
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         return
     else:
         t.lexer.lineno += 1
@@ -142,11 +143,11 @@ def t_code_indentation(t):
     
     if previous_indentation == current_indentation:
         t.lexer.lineno += 1
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         return 
     elif previous_indentation > current_indentation: 
         t.lexer.skip(-len(t.value))
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         return
     else:
         t.lexer.lineno += 1
@@ -164,11 +165,11 @@ def t_comment_indentation(t):
     t.lexer.newline = True
 
     if previous_indentation == current_indentation:
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         t.lexer.lineno += 1
         return 
     elif previous_indentation > current_indentation:
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         t.lexer.skip(-len(t.value))
         return 
     else:
@@ -202,12 +203,12 @@ def t_block_indentation(t): # Rever
     t.lexer.newline = True
 
     if previous_indentation == current_indentation:
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         t.lexer
         t.lexer.lineno += 1
         return 
     elif previous_indentation > current_indentation:
-        t.lexer.begin('INITIAL')
+        t.lexer.pop_state()
         t.lexer.skip(-len(t.value))
         return 
     else:
@@ -234,7 +235,7 @@ def t_block_indentation(t): # Rever
 def t_lparen(t):
     r'\('
     t.lexer.newline = False
-    t.lexer.begin('attributes')
+    t.lexer.push_state('attributes')
 
 
 # Define a rule for the attributes
@@ -248,7 +249,7 @@ def t_attributes_ATTRIBUTES(t):
         t.lexer.parCount-=1
         if t.lexer.parCount == -1:
             t.value = t.lexer.attributesBuffer[:-1]
-            t.lexer.begin('INITIAL')
+            t.lexer.pop_state()
             t.lexer.attributesBuffer = ""
             t.lexer.parCount=0
             return t 
@@ -258,14 +259,14 @@ def t_attributes_ATTRIBUTES(t):
 def t_ignorecomment(t):
     r'//-.*'
     t.lexer.newline = False
-    t.lexer.begin('ignorecomment')
+    t.lexer.push_state('ignorecomment')
 
 
 # Define a rule for the comments
 def t_COMMENT(t):
     r'//.*'
     t.lexer.newline = False
-    t.lexer.begin('comment')
+    t.lexer.push_state('comment')
     return t
 
 
@@ -290,7 +291,7 @@ def t_JSCODE(t):
     t.lexer.newline = False
     t.value = t.value[1:]
     if t.value.isspace() or t.value == "":
-        t.lexer.begin('code')
+        t.lexer.push_state('code')
     return t
 
 
@@ -317,9 +318,14 @@ def t_assign_JSCODE(t):
 
 #  Define a rule for the begin interpolation symbols
 def t_BEGININTERP(t):
-    r'\#\{'
-    t.lexer.newline = False
-    t.lexer.push_state('interpolation')
+    r'\#(\{|\[)'
+    if t.value == '#{':
+        t.lexer.push_state('interpolation')
+        t.lexer.newline = False
+    elif t.value == '#[':
+        t.lexer.push_state('taginterpolation')
+        t.lexer.newline = True
+    
     return t
 
 
@@ -343,19 +349,24 @@ def t_interpolation_IDENTIFIER(t):
     t.lexer.newline = False
     return t
 
-
 #  Define a rule for the end interpolation symbol
 def t_interpolation_ENDINTERP(t):
-    r'\}'
+    r'(\}|\])'
     t.lexer.newline = False
     t.lexer.pop_state()
     return t
 
+#  Define a rule for the end interpolation symbol
+def t_taginterpolation_ENDINTERP(t):
+    r'(\}|\])'
+    t.lexer.newline = False
+    t.lexer.pop_state()
+    return t
 
 #  Define a rule for the JSCODE in iteration state
 def t_iteration_JSCODE(t):
     r'(?<=(in\s)).*'
-    t.lexer.begin('INITIAL')
+    t.lexer.pop_state()
     t.lexer.newline = False
     return t 
 
@@ -384,7 +395,7 @@ def t_iteration_IDENTIFIER(t):
 #  Define a rule for the CONDITION of conditional
 def t_conditional_CONDITION(t):
     r'.+'
-    t.lexer.begin('INITIAL')
+    t.lexer.pop_state()
     t.lexer.newline = False
     return t
 
@@ -392,22 +403,22 @@ def t_conditional_CONDITION(t):
 #  Define a rule for the ELSEIF token
 def t_ELSEIF(t):
     r'else[ ]if'
-    t.lexer.begin('conditional')
+    t.lexer.push_state('conditional')
     t.lexer.newline = False
     return t
 
 
 # Define a rule for the TAG token
 def t_TAG(t):
-    r'(?<=\s)[a-z][a-z0-9]*'
+    r'(?<=(\s|\[))[a-z][a-z0-9]*'
     t.type = reserved.get(t.value, 'TAG')
     t.lexer.newline = False
     
     match t.type:
         case 'UNLESS' | 'WHILE' | 'CASE' | 'WHEN' | 'IF':
-            t.lexer.begin('conditional')
+            t.lexer.push_state('conditional')
         case 'EACH':
-            t.lexer.begin('iteration')
+            t.lexer.push_state('iteration')
         case _:
             pass
     return t
@@ -444,18 +455,43 @@ def t_CLASS(t):
 # Define a rule for the DOT token
 def t_DOT(t):
     r'\.'
-    t.lexer.begin('block')
+    t.lexer.push_state('block')
     t.lexer.newline = False
     return t
     
 
 # Define a rule for the TEXT token
 def t_TEXT(t):
-    r'.+?(?=\#\{)|<.*?>|.+'
+    r'.+?(?=\#(\{|\[))|<.*?>|.+'
     t.lexer.newline = False
     if t.value.isspace():
         return
     return t
+
+
+
+def t_taginterpolation_BEGININTERP(t):
+    r'\#(\{|\[)'
+    if t.value == '#{':
+        t.lexer.push_state('interpolation')
+        t.lexer.newline = False
+    elif t.value == '#[':
+        t.lexer.push_state('taginterpolation')
+        t.lexer.newline = True
+    return t
+
+def t_taginterpolation_lparen(t):
+    r'\('
+    t.lexer.newline = False
+    t.lexer.push_state('attributes')
+
+def t_taginterpolation_TEXT(t):
+    r'(?<!\[).+?(?=\#(\{|\[))|(?<!\[).+?(?=\])'
+    t.lexer.newline = False
+    if t.value.isspace():
+        return
+    return t
+
 
 
 # Define a rule for the comment text 
@@ -487,9 +523,14 @@ def t_block_TEXT(t):
 
 # Define a rule for the block BEFININTERP token
 def t_block_BEGININTERP(t):
-    r'\#\{'
-    t.lexer.push_state('interpolation')
-    t.lexer.newline = False
+    r'\#(\{|\[)'
+    if t.value == '#{':
+        t.lexer.push_state('interpolation')
+        t.lexer.newline = False
+    elif t.value == '#[':
+        t.lexer.push_state('taginterpolation')
+        t.lexer.newline = True
+    
     return t
 
 
