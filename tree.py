@@ -2,6 +2,25 @@ import js2py
 import re
 context = js2py.EvalJs({})
 
+def block_text(string, indentation):
+        
+    count = 0
+    for char in string:
+        if char == ' ':
+                count += 1
+        else:
+            break
+    count -= len(indentation[1:])
+    if count == 1:
+        string = string[1:]
+    elif count == 0:
+        pass
+    else:
+        string = string.lstrip()
+        string = ' ' + string 
+    
+    return string
+        
 
 class Tree:
     def __init__(self, type, value='', trees=[]):
@@ -93,6 +112,7 @@ class Tree:
                     code += tree.value
                 
         return code
+    
 
     def to_html(self, indentation="\n", condition=""):
         string = ""
@@ -282,7 +302,19 @@ class Tree:
                 tag = self.trees[0].to_html(indentation)
                 aux = tag.split()
                 tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
-                string += indentation + tag + self.trees[1].to_html(indentation+" ") + indentation + '</' + tag_name + '>' 
+
+                fst_line = self.trees[1].trees.pop(0).value
+                fst_line = block_text(fst_line, indentation)                
+
+                last_line = self.trees[1].trees.pop(-1).value.lstrip()
+                if (last_line[-1] == ' ') or (last_line[-1] == '\t'):
+                    last_line = last_line.rstrip()
+                    last_line = last_line + ' '
+            
+                lines = [tree.value.lstrip() for tree in self.trees[1].trees]
+                indented_lines = [line + indentation + ' '*2 for line in lines]
+
+                string += indentation + tag + fst_line + indentation + ' '*2 + ''.join(indented_lines) + last_line + '</' + tag_name + '>' 
 
             case 'tagline6': 
                 # tagline : tag
