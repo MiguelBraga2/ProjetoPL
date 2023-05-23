@@ -10,7 +10,6 @@ def block_text(string, indentation):
                 count += 1
         else:
             break
-    count -= len(indentation[1:])
     if count == 1:
         string = string[1:]
     elif count == 0:
@@ -296,7 +295,7 @@ class Tree:
             
             case 'tagline4': 
                 # tagline : tag BAR
-                string += indentation + self.trees[0].to_html(indentation)[:-1] + '/>'
+                string += indentation + self.trees[0].to_html(indentation)[:-1] + ' />'
         
             case 'tagline5':
                 # tagline : tag DOT text
@@ -304,18 +303,27 @@ class Tree:
                 aux = tag.split()
                 tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
 
-                fst_line = self.trees[1].trees.pop(0).value
-                fst_line = block_text(fst_line, indentation)                
+                if tag_name == 'script':
+                    lines = [tree.value.lstrip() for tree in self.trees[1].trees]
+                    indented_lines = [line + indentation + ' '*2 for line in lines]
+                    
+                    string += indentation + tag + indentation + ' '*2 + ''.join(indented_lines)[:-2] + '</' + tag_name + '>' 
+                else:
+                    fst_line = self.trees[1].trees.pop(0).value
+                    fst_line = block_text(fst_line, indentation)   
+                    
+                    if len(self.trees[1].trees) > 0 : 
+                        last_line = self.trees[1].trees.pop(-1).value.lstrip()
+                        if (last_line[-1] == ' ') or (last_line[-1] == '\t'):
+                            last_line = last_line.rstrip()
+                            last_line = last_line + ' '
+                    else: 
+                        last_line = ''
 
-                last_line = self.trees[1].trees.pop(-1).value.lstrip()
-                if (last_line[-1] == ' ') or (last_line[-1] == '\t'):
-                    last_line = last_line.rstrip()
-                    last_line = last_line + ' '
-            
-                lines = [tree.value.lstrip() for tree in self.trees[1].trees]
-                indented_lines = [line + indentation + ' '*2 for line in lines]
+                    lines = [tree.value.lstrip() for tree in self.trees[1].trees]
+                    indented_lines = [line + indentation + ' '*2 for line in lines]
+                    string += indentation + tag + fst_line + indentation + ' '*2 + ''.join(indented_lines) + last_line + '</' + tag_name + '>' 
 
-                string += indentation + tag + fst_line + indentation + ' '*2 + ''.join(indented_lines) + last_line + '</' + tag_name + '>' 
 
             case 'tagline6': 
                 # tagline : tag
