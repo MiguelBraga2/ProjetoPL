@@ -43,20 +43,26 @@ class Tree:
             if subtree.type == 'CLASS':
                 classes.append(subtree.value)
             else:
-                attributes_names = re.findall(r'\w+\s*=(?!=)', subtree.value)
-                attributes_values = re.split(r'\w+\s*=(?!=)', subtree.value)[1:]
-                
-                for i in range(len(attributes_names)):
-                    attributes_names[i] = attributes_names[i].strip()
-                    attributes_names[i] = attributes_names[i][:-1]
-                    attributes_values[i] = context.eval(attributes_values[i])
+                at = re.sub(r'\s*(=|\:|\?|\+|-|\*|\/|,|\(|\)|\%|\<|\>|\&|\^|\||\!)', r'\1' , subtree.value)
+                at = re.split(r',?\s+', at)
 
-                    if attributes_names[i] == 'class':
-                        classes.append(attributes_values[i])
-                    elif attributes_names[i] not in attributes:
-                        attributes[attributes_names[i]] = attributes_values[i] 
+                for attribute in at:
+                    attribute = re.split('=', attribute)
+                    
+                    if len(attribute) == 1:
+                        if attribute[0] == 'class':
+                           classes.append(attribute[0])
+                        elif attribute[0] not in attributes:
+                            attributes[attribute[0]] = attribute[0]
+                        else:
+                          raise ValueError(f'Duplicated attribute "{attribute[0]}" in not allowed')
                     else:
-                        raise ValueError(f'Duplicated attribute "{attributes_names[i]}" in not allowed')
+                        if attribute[0] == 'class':
+                           classes.append(context.eval(attribute[1]))
+                        elif attribute[0] not in attributes:
+                            attributes[attribute[0]] = context.eval(attribute[1])
+                        else:
+                          raise ValueError(f'Duplicated attribute "{attribute[0]}" in not allowed')                
 
         return classes, attributes
 
@@ -68,7 +74,7 @@ class Tree:
                 classes1, attributes1 = self.trees[0].to_html_attribute_list()
                 id = self.trees[1].value
                 classes2, attributes2 = self.trees[2].to_html_attribute_list()
-                classes = classes + classes1 + classes2
+                classes = classes1 + classes2
                 attributes = attributes1.copy()
                 attributes1.update(attributes2)
 
@@ -351,9 +357,9 @@ class Tree:
                 elif id == None:
                     string += f'<{self.trees[0].value} class="{" ".join(classes)}"{atts}>'
                 elif cls == '':
-                    string += f'<{self.trees[0].value}{atts} id="{id}">'
+                    string += f'<{self.trees[0].value} id="{id}"{atts}>'
                 else:
-                    string += f'<{self.trees[0].value} class="{" ".join(classes)}"{atts} id="{id}">'
+                    string += f'<{self.trees[0].value} class="{" ".join(classes)}" id="{id}"{atts}>'
                 
             case 'tag2': 
                 # tag : TAG
