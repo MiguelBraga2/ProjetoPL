@@ -232,7 +232,7 @@ def p_attributes(p):
                | ID
     """
     if len(p) == 4:
-        p[0] == Tree(type='attributes1', trees=[p[1], Tree(type='ID', value=p[2]) , p[3]])
+        p[0] = Tree(type='attributes1', trees=[p[1], Tree(type='ID', value=p[2]) , p[3]])
     elif len(p) == 3:
         if type(p[1]) == str:
             p[0] = Tree(type='attributes2', trees=[Tree(type='ID', value=p[1]) , p[2]])

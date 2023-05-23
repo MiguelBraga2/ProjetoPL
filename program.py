@@ -1,10 +1,11 @@
 from yacc_parser import parser
+import sys
 
 data = """
-ul
-  each val, key in {1: 'one', 2: 'two', 3: 'three'}
-    li= key + ': ' + val
-"""
+""" 
+
+for line in sys.stdin:
+  data += line
 
 if data[-1] != '\n':
     data += '\n'

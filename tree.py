@@ -223,7 +223,8 @@ class Tree:
                 
             case 'iteration1':
                 # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
-                iterator = context.eval(self.trees[1].value)
+                context.execute('iteration1 = ' + self.trees[1].value)
+                iterator = context.eval('iteration1')
                 for val in iterator:
                     if type(val) == str:
                         val = '"' + val + '"'
@@ -352,7 +353,10 @@ class Tree:
                 
             case 'content1': 
                 # content : EQUALS JSCODE
-                string += str(context.eval(self.trees[0].value)) 
+                try:
+                    string += str(context.eval(self.trees[0].value)) 
+                except:
+                    pass
             
             case 'content2': 
                 # content : text
@@ -390,7 +394,7 @@ class Tree:
                 string += self.trees[2].to_html(indentation, cond)
 
             case 'casesdefault1':
-                default = self.trees[1]
+                default = self.trees[2]
                 
                 result = False
 
