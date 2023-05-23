@@ -53,14 +53,20 @@ class Tree:
                         if attribute[0] == 'class':
                            classes.append(attribute[0])
                         elif attribute[0] not in attributes:
-                            attributes[attribute[0]] = attribute[0]
+                            try:
+                                attributes[attribute[0]] = attribute[0]
+                            except:
+                                attributes[attribute[0]] = ""
                         else:
                           raise ValueError(f'Duplicated attribute "{attribute[0]}" in not allowed')
                     else:
                         if attribute[0] == 'class':
                            classes.append(context.eval(attribute[1]))
                         elif attribute[0] not in attributes:
-                            attributes[attribute[0]] = context.eval(attribute[1])
+                            try: 
+                                attributes[attribute[0]] = context.eval(attribute[1])
+                            except:
+                                attributes[attribute[0]] = ""
                         else:
                           raise ValueError(f'Duplicated attribute "{attribute[0]}" in not allowed')                
 
