@@ -2,7 +2,7 @@ import js2py
 import re
 context = js2py.EvalJs({})
 
-def block_text(string, indentation):
+def block_text(string):
         
     count = 0
     for char in string:
@@ -285,30 +285,75 @@ class Tree:
                 tag = self.trees[0].to_html(indentation)
                 aux = tag.split(" ")
                 tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
-                string += indentation + tag + self.trees[1].to_html() + \
-                                self.trees[3].to_html(indentation = self.trees[2].value)
-                string += indentation + '</' + tag_name + '>'
-            
+
+                if tag_name == 'html':
+                    string += indentation + tag + self.trees[1].to_html() + '\n' + \
+                                    self.trees[3].to_html(indentation = indentation)
+                    string += '\n' + indentation + '</' + tag_name + '>'
+                else:
+                    if tag_name == 'body':
+                        p = '\n'
+                    else:
+                        p = '' 
+
+                    string += p + indentation + tag + self.trees[1].to_html() + \
+                                    self.trees[3].to_html(indentation = indentation + ' '*2)
+                    string += indentation + '</' + tag_name + '>'
+                
             case 'tagline2':
                 # tagline : tag INDENT lines DEDENT 
                 tag = self.trees[0].to_html(indentation)
                 aux = tag.split()
                 tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
-                string += indentation + tag + \
-                                self.trees[2].to_html(indentation = self.trees[1].value)
-                string += indentation + '</' + tag_name + '>'                  
-            
+
+                if tag_name == 'html':
+                    string += indentation + tag + '\n' + \
+                                    self.trees[2].to_html(indentation = indentation)
+                    string += '\n' + indentation + '</' + tag_name + '>'
+                else:
+                    if tag_name == 'body':
+                        p = '\n'
+                    else:
+                        p = ''
+                    
+                    string += p + indentation + tag + \
+                                    self.trees[2].to_html(indentation = indentation + ' '*2)
+                    string += indentation + '</' + tag_name + '>'                  
+                
             case 'tagline3':
                 # tagline : tag content
                 tag = self.trees[0].to_html(indentation)
                 aux = tag.split()
                 tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
-                string += indentation + tag + self.trees[1].to_html(indentation) + '</' + tag_name + '>' 
-            
+
+                if tag_name == 'html':
+                    string += indentation + tag + self.trees[1].to_html(indentation) + '\n' + indentation + '</' + tag_name + '>' 
+                else: 
+                    
+                    if tag_name == 'body':
+                        p = '\n'
+                    else:
+                        p = ''
+
+                    string += p + indentation + tag + self.trees[1].to_html(indentation) + '</' + tag_name + '>' 
+
             case 'tagline4': 
                 # tagline : tag BAR
-                string += indentation + self.trees[0].to_html(indentation)[:-1] + ' />'
-        
+                tag = self.trees[0].to_html(indentation)
+                aux = tag.split()
+                tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
+
+                if tag_name == 'html':
+                    string += indentation + tag[:-1] + ' />' + '\n'
+                else:
+
+                    if tag_name == 'body':
+                        p = '\n'
+                    else:
+                        p = ''
+
+                    string += p + indentation + tag[:-1] + ' />'
+
             case 'tagline5':
                 # tagline : tag DOT text
                 tag = self.trees[0].to_html(indentation)
@@ -322,7 +367,7 @@ class Tree:
                     string += indentation + tag + indentation + ' '*2 + ''.join(indented_lines)[:-2] + '</' + tag_name + '>' 
                 else:
                     fst_line = self.trees[1].trees.pop(0).value
-                    fst_line = block_text(fst_line, indentation)   
+                    fst_line = block_text(fst_line)   
                     
                     if len(self.trees[1].trees) > 0 : 
                         last_line = self.trees[1].trees.pop(-1).value.lstrip()
@@ -332,9 +377,20 @@ class Tree:
                     else: 
                         last_line = ''
 
+                    if tag_name == 'html':
+                        ht = '\n' + indentation 
+                    else:
+                        ht = ''
+
+
+                    if tag_name == 'body':
+                        p = '\n'
+                    else:
+                        p = ''
+
                     lines = [tree.value.lstrip() for tree in self.trees[1].trees]
                     indented_lines = [line + indentation + ' '*2 for line in lines]
-                    string += indentation + tag + fst_line + indentation + ' '*2 + ''.join(indented_lines) + last_line + '</' + tag_name + '>' 
+                    string += p + indentation + tag + fst_line + indentation + ' '*2 + ''.join(indented_lines) + last_line + ht + '</' + tag_name + '>' 
 
 
             case 'tagline6': 
@@ -342,7 +398,17 @@ class Tree:
                 tag = self.trees[0].to_html(indentation)
                 aux = tag.split()
                 tag_name = aux[0][1:] if len(aux) > 1 else aux[0][1:-1] 
-                string += indentation + tag + '</' + tag_name + '>' 
+
+                if tag_name == 'html':
+                    string += indentation + tag + '\n' + indentation + '</' + tag_name + '>' 
+                else:
+
+                    if tag_name == 'body':
+                        p = '\n'
+                    else:
+                        p = ''
+
+                    string += p + indentation + tag + '</' + tag_name + '>' 
             
             case 'tag1': 
                 # tag : TAG attributes
