@@ -6,7 +6,7 @@ reserved = {
     'if' : 'IF',
    'else' : 'ELSE',
    'while' : 'WHILE',
-   'unless' : 'UNLESS',
+   'unless' : 'UNLESS', # Negated if
    'each' : 'EACH',
    'when' : 'WHEN',
    'default' : 'DEFAULT',
@@ -15,18 +15,18 @@ reserved = {
 
 # Define the tokens for PugJS
 tokens = (
-    'ATTRIBUTES',
-    'INDENT',
-    'DEDENT',
-    'CLASS',
-    'ID',
-    'TAG',
-    'IDENTIFIER',
+    'ATTRIBUTES', # Everything between ( and ) 
+    'INDENT', # For blocks indented
+    'DEDENT', # For removing indentation
+    'CLASS', # HTML classes
+    'ID', # HTML ids (1 max per tag)
+    'TAG', 
+    'IDENTIFIER', # Variable name
     'COMMA',
     'EQUALS',
-    'STRING',
-    'BAR',
-    'BEGININTERP',
+    'STRING', # Attribute value can be a string
+    'BAR', 
+    'BEGININTERP', # Valid for Javascript and Tag Interpolation
     'ENDINTERP',
     'DOT',
     'TEXT',
@@ -49,13 +49,13 @@ tokens = (
 
 # Define the states for pugjs
 states = (
-    ('ignorecomment', 'exclusive'),
-    ('assign', 'exclusive'),
-    ('attributes', 'exclusive'),
-    ('interpolation', 'exclusive'),
+    ('ignorecomment', 'exclusive'), # In this state, we don't want to read anything
+    ('assign', 'exclusive'), # Enables us to read JSCODE like reading TEXT (.*)
+    ('attributes', 'exclusive'), # Enables us to read everything until ']'
+    ('interpolation', 'exclusive'), # Simplify reading of tokens
     ('comment', 'exclusive'),
     ('block', 'exclusive'),
-    ('conditional', 'exclusive'),
+    ('conditional', 'exclusive'), # To read condition as .+
     ('iteration', 'exclusive'),
     ('code', 'exclusive'),
     ('taginterpolation', 'inclusive')
