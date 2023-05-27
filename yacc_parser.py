@@ -70,11 +70,11 @@ def p_casesdefault(p):
                  | DEFAULT INDENT lines DEDENT
     """
     if len(p) == 6:
-        p[0] = Tree(type='casesdefault1', trees=[p[1], Tree(type='INDENT', value=p[3]), p[4]])
+        p[0] = Tree(type='casesdefault1', trees=[p[1], p[4]])
     elif len(p) == 2:
         p[0] = Tree(type='casesdefault2', trees=[p[1]])
     else:
-        p[0] = Tree(type='casesdefault3', trees=[Tree(type='INDENT', value=p[2]), p[3]])
+        p[0] = Tree(type='casesdefault3', trees=[p[3]])
 
 def p_cases(p):
     """
@@ -90,7 +90,7 @@ def p_case(p):
     """    
     case : WHEN CONDITION INDENT lines DEDENT
     """
-    p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2]), Tree(type='INDENT', value=p[3]), p[4]])
+    p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2]), p[4]])
 
 
 # COMMENT

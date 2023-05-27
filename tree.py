@@ -493,7 +493,7 @@ class Tree:
                 string += self.trees[2].to_html(indentation, cond)
 
             case 'casesdefault1':
-                default = self.trees[2]
+                default = self.trees[1]
 
                 result = False
 
