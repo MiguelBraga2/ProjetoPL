@@ -361,14 +361,14 @@ class Tree:
                 line = ""
                 for tree in self.trees[1].trees:
                     if tree.type == 'TEXT':
-                            line += tree.value
+                        line += tree.value
                     elif tree.type[:-1] == 'tagline':
-                        line += tree.to_html(indentation=indentation)
+                        line += tree.to_html(indentation='')
                     elif tree.type == 'NEWLINE':
                         lines.append(line)
                         line = ''
                     else:
-                        line += tree.to_html(indentation=indentation)
+                        line += tree.to_html(indentation='')
 
                 if line != '':
                     lines.append(line)

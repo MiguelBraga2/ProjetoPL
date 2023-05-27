@@ -520,13 +520,6 @@ def t_ignorecomment_TEXT(t):
     t.lexer.newline = False
 
 
-# Define a rule for the block text
-def t_block_TEXT(t):
-    r'.+?(?=(\#\{|\#\[))|.+'
-    t.lexer.newline = False
-    return t
-
-
 # Define a rule for the block BEFININTERP token
 def t_block_BEGININTERP(t):
     r'\#(\{|\[)'
@@ -536,7 +529,13 @@ def t_block_BEGININTERP(t):
     elif t.value == '#[':
         t.lexer.push_state('taginterpolation')
         t.lexer.newline = True
+    return t
 
+
+# Define a rule for the block text
+def t_block_TEXT(t):
+    r'.+?(?=(\#\{|\#\[))|.+'
+    t.lexer.newline = False
     return t
 
 
