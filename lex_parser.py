@@ -1,6 +1,8 @@
 import ply.lex as lex
 import sys
 
+from IndentationException import IndentationException
+
 # Reserved words 
 reserved = {
     'if': 'IF',
@@ -90,11 +92,12 @@ def t_INITIAL_indentation(t):
         return
 
     elif previous_indentation > current_indentation:
+        aux = t.lexer.indent_stack[-1]
         t.lexer.indent_stack.pop()
         if t.lexer.indent_stack[-1] > current_indentation:
             t.lexer.skip(-len(t.value))
         elif t.lexer.indent_stack[-1] < current_indentation:
-            raise ValueError('Indentation error')
+            raise IndentationException(f'Inconsistent indentation. Expecting either {t.lexer.indent_stack[-1]} or {aux} spaces/tabs on line {t.lexer.lineno}.')
         else:
             t.lexer.lineno += 1
         t.type = 'DEDENT'
