@@ -62,7 +62,7 @@ tagline : tag content INDENT lines DEDENT
         | tag INDENT lines DEDENT 
         | tag content 
         | tag BAR
-        | tag DOT text
+        | tag DOT NEWLINE block_text
         | tag
 
 tag : TAG attributes
@@ -86,6 +86,12 @@ content : EQUALS JSCODE
 interpolation : VARIABLE
               | STRING 
               | NUMBER
+
+block_text : block_text BEGININTERP interp ENDINTERP
+           | blocK_text TEXT
+           | block_text NEWLINE
+           | BEGININTERP interp ENDINTERP
+           | TEXT
 
 text : text BEGININTERP interp ENDINTERP
      | text TEXT

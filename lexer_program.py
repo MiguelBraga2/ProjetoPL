@@ -1,7 +1,21 @@
 from lex_parser import lexer
 
 data = """
-a #[p #[.class(attr=1) ola #{"ola"}]]
+html(lang="en")
+  head
+    title= pageTitle
+    script(type='text/javascript').
+      if (foo) bar(1 + 5)
+  body
+    h1 Pug - node template engine
+    #container.col
+      if youAreUsingPug
+        p You are amazing
+      else
+        p Get on it!
+      p.
+        Pug is a terse and simple templating language with a
+        strong focus on performance and powerful features
 """
 
 lexer.input(data)
