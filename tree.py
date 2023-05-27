@@ -480,21 +480,9 @@ class Tree:
                 string += str(self.trees[0].value)
 
             case 'text':
-                res = indentation
                 for subtree in self.trees:
                     subtree_html = subtree.to_html(indentation)
                     string += indentation + subtree_html
-
-                """for subtree in self.trees:
-                    print(subtree.type)
-                    if subtree.type == 'TEXT':
-                        res += subtree.to_html(indentation)
-                    elif subtree.type[:-1] == 'tagline':
-                        aux = subtree.to_html(indentation)
-                        #print(aux)
-                        res += re.sub(r'\n\s*?', '', aux)
-                    else:
-                        res += subtree.to_html(indentation)"""
 
             case 'TEXT':
                 string += self.value

@@ -432,7 +432,7 @@ def t_TAG(t):
 
 # Define a rule for the ID token
 def t_ID(t):
-    r'\#\w+'
+    r'\#[\w\-_]+'
     if t.lexer.newline:
         t.lexer.skip(-len(t.value))
         t.type = 'TAG'
@@ -446,7 +446,7 @@ def t_ID(t):
 
 # Define a rule for the CLASS token
 def t_CLASS(t):
-    r'\.\w+'
+    r'\.[\w\-_]+'
     if t.lexer.newline:
         t.lexer.skip(-len(t.value))
         t.type = 'TAG'
