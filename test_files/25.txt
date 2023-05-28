@@ -1,0 +1,2 @@
+- var authenticated = true
+p= authenticated ? 'authed' : 'anon'
