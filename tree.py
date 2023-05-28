@@ -1,6 +1,7 @@
 import random
 import js2py
 import re
+# Exceptions
 from DuplicateAttribute import DuplicateAttribute
 from SelfClosingElement import SelfClosingElement
 from UnexpectedToken import UnexpectedToken
@@ -24,6 +25,7 @@ def block_text(string):
 
     return string
 
+# Check if string is a javascript loop
 def is_javascript_loop(string):
     pattern = r"^\s*(for|while)\s*\(.+\)\s*$"
     match = re.search(pattern, string)
@@ -34,7 +36,8 @@ class Tree:
         self.type = type
         self.value = value
         self.trees = trees
-
+    
+    # Print tree in a basic tree formatting
     def print_tree(self):
         print(self.type + '  ' + self.value + '(', end='')
         for tree in self.trees:
@@ -46,15 +49,16 @@ class Tree:
         attributes = {}
 
         for subtree in self.trees:
+            # If we find a class, append it to the class list
             if subtree.type == 'CLASS':
                 classes.append(subtree.value)
-            else:
-
+            else: # Remove spaces anywhere except between attributes
                 at = re.sub(r'\s*(=|\:|\?|\+|-|\*|\/|,|\(|\)|\%|\<|\>|\&|\^|\||\!|\'|\{)', r'\1', subtree.value)
                 style = re.findall(r'\w+=\{[^}]+}', at)
                 if style:
                     at = re.sub(r'\w+=\{[^}]+}', '', at)
 
+                # Create the attribute list by splitting by spaces
                 at = re.split(r',?\s+', at)
                 if at[0] == '':
                     at.pop(0)
@@ -72,7 +76,7 @@ class Tree:
                                 attributes[attribute[0]] = attribute[0]
                             except:
                                 attributes[attribute[0]] = ""
-                        else:
+                        else: # Check for duplicated attributes
                             raise DuplicateAttribute(f'Duplicated attribute "{attribute[0]}" in not allowed')
                     else:
                         if attribute[0] == 'class':
@@ -105,7 +109,7 @@ class Tree:
                 classes1, attributes1 = self.trees[0].to_html_attribute_list()
                 id = self.trees[1].value
                 classes2, attributes2 = self.trees[2].to_html_attribute_list()
-                classes = classes1 + classes2
+                classes = classes1 + classes2 # Concatenate all classes from the attributes groups
 
                 for chave, valor in attributes2.items():
                     if chave in attributes1:
@@ -147,8 +151,9 @@ class Tree:
 
         return code
 
+    # Function to convert to HTML
     def to_html(self, indentation="\n", condition=""):
-        global context
+        global context # Context Javascript with the variables
         string = ""
 
         match self.type:
@@ -160,11 +165,11 @@ class Tree:
                 string += self.trees[0].to_html(indentation)
 
             case 'DOCTYPE':
-                res = re.sub('doctype', 'DOCTYPE', self.value.rstrip())
+                res = re.sub('doctype', 'DOCTYPE', self.value.rstrip()) # To UPPER
                 if res == 'DOCTYPE':
                     string += indentation + '<!DOCTYPE html>'
                 else:
-                    res = re.sub(r'\s+', ' ', res)
+                    res = re.sub(r'\s+', ' ', res) 
                     res = re.split(r'DOCTYPE', res)
                     string += indentation + '<!DOCTYPE ' + res[-1].lstrip() + '>'
 
@@ -179,7 +184,7 @@ class Tree:
                 code = self.trees[0].get_code()
 
                 if is_javascript_loop(code):
-
+                    # Generate a random_number to distinguish between contests
                     random_number = random.randint(1, 100000000000000)
                     setattr(context, 'to_html' + str(random_number), self.trees[2].to_html)
                     context.execute(f'''
