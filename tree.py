@@ -96,7 +96,6 @@ class Tree:
         return classes, attributes
 
     def to_html_attributes(self):
-
         match self.type:
             case 'attributes1':
                 classes1, attributes1 = self.trees[0].to_html_attribute_list()
@@ -162,7 +161,7 @@ class Tree:
                 else:
                     res = re.sub(r'\s+', ' ', res)
                     res = re.split(r'DOCTYPE', res)
-                    string += indentation + '<!DOCTYPE ' + res[-1] + '>'
+                    string += indentation + '<!DOCTYPE ' + res[-1].lstrip() + '>'
 
             case 'code1':
                 code = self.trees[0].get_code()
@@ -304,7 +303,7 @@ class Tree:
                 # comment : COMMENT comment_text
                 fst_line = self.trees[0].value[2:]  # Retira o //
                 lines = [tree.value.replace('\t', '    ') for tree in
-                         self.trees[1].trees]  # Substituii \t por '    ' nas linhas seguintes
+                         self.trees[1].trees]  # Substitui \t por '    ' nas linhas seguintes
                 min_spaces = min(len(line) - len(line.lstrip()) for line in lines) if lines else 0
                 stripped_lines = [line[min_spaces:] for line in lines]
                 indented_lines = [line + '\n' for line in stripped_lines[:-1]] + [stripped_lines[-1]]
