@@ -1,9 +1,13 @@
 from lex_parser import lexer
 
 data = """
-- for(let i=0; i<100; i++)
-    - for(let j=0; j<2; j++)
-        p= 2*i + j
+- var friends = 0
+case friends
+  when 0
+  when 1
+    p you have very few friends
+  default
+    p you have #{friends} friends
 """
 
 lexer.input(data)
