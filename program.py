@@ -1,4 +1,5 @@
 from IndentationException import IndentationException
+from UnexpectedToken import UnexpectedToken
 from yacc_parser import parser
 import sys
 
@@ -17,4 +18,6 @@ try:
     html = html.lstrip()
     print(html, end='')
 except IndentationException as ex:
+    print(ex)
+except UnexpectedToken as ex:
     print(ex)
