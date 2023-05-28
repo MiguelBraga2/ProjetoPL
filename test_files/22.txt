@@ -1,0 +1,4 @@
+.class1(class="class")
+.class2#id1(atta=1  class="class3")
+#id1
+#id2

@@ -70,11 +70,11 @@ def p_casesdefault(p):
                  | DEFAULT INDENT lines DEDENT
     """
     if len(p) == 6:
-        p[0] = Tree(type='casesdefault1', trees=[p[1], Tree(type='INDENT', value=p[3]), p[4]])
+        p[0] = Tree(type='casesdefault1', trees=[p[1], p[4]])
     elif len(p) == 2:
         p[0] = Tree(type='casesdefault2', trees=[p[1]])
     else:
-        p[0] = Tree(type='casesdefault3', trees=[Tree(type='INDENT', value=p[2]), p[3]])
+        p[0] = Tree(type='casesdefault3', trees=[p[3]])
 
 def p_cases(p):
     """
@@ -90,7 +90,7 @@ def p_case(p):
     """    
     case : WHEN CONDITION INDENT lines DEDENT
     """
-    p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2]), Tree(type='INDENT', value=p[3]), p[4]])
+    p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2]), p[4]])
 
 
 # COMMENT
@@ -196,20 +196,21 @@ def p_tagline(p):
             | tag INDENT lines DEDENT 
             | tag content
             | tag BAR
-            | tag DOT text
+            | tag DOT NEWLINE block_text
             | tag
     """
     if len(p) == 6: # tag content INDENT lines DEDENT
         p[0] = Tree(type='tagline1', trees=[p[1], p[2], Tree(type='INDENT', value=p[3]), p[4]])
     elif len(p) == 5: # tag INDENT lines DEDENT
-        p[0] = Tree(type='tagline2', trees=[p[1], Tree(type='INDENT', value=p[2]), p[3]])
-    elif len(p) == 3: 
+        if p[2] == '.': # tag DOT NEWLINE text
+            p[0] = Tree(type='tagline5', trees=[p[1], p[4]])
+        else: # tag INDENT lines DEDENT
+            p[0] = Tree(type='tagline2', trees=[p[1], Tree(type='INDENT', value=p[2]), p[3]])
+    elif len(p) == 3:
         if p[2] == '/': # tag BAR
             p[0] = Tree(type='tagline4', trees=[p[1], Tree(type='BAR', value=p[2])])
         else: # tag content
             p[0] = Tree(type='tagline3', trees=[p[1], p[2]])
-    elif len(p) == 4: # tag DOT text
-        p[0] = Tree(type='tagline5', trees=[p[1], p[3]])
     else: # tag
         p[0] = Tree(type='tagline6', trees=[p[1]])
 
@@ -295,6 +296,26 @@ def p_interp(p):
            | tagline
     """
     p[0] = p[1]
+
+def p_block_text(p):
+    """
+    block_text : block_text BEGININTERP interp ENDINTERP
+               | block_text TEXT
+               | block_text NEWLINE
+               | BEGININTERP interp ENDINTERP
+               | TEXT
+    """
+    if len(p) == 5: # text BEGININTERP interp ENDINTERP
+        p[0] = p[1].addSubTree(p[3])
+    elif len(p) == 3: # text TEXT
+        if p[2][0] != '\n':
+            p[0] = p[1].addSubTree(Tree(type='TEXT', value=p[2]))
+        else:
+            p[0] = p[1].addSubTree(Tree(type='NEWLINE', value=''))
+    elif len(p) == 4: # BEGININTERP interp ENDINTERP
+        p[0] = Tree(type='text', trees=[p[2]])
+    else: # TEXT
+        p[0] = Tree(type='text', trees=[Tree(type='TEXT', value=p[1])])
 
 def p_text(p):
     """
