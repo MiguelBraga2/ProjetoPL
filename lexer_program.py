@@ -1,9 +1,11 @@
 from lex_parser import lexer
 
 data = """
-- for(let i=0; i<100; i++)
-    - for(let j=0; j<2; j++)
-        p= 2*i + j
+div
+  p This text belongs to the paragraph tag.
+  br
+  .
+    This text belongs to the div tag.
 """
 
 lexer.input(data)
