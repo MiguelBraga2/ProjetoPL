@@ -1,5 +1,6 @@
 import js2py
 import re
+import copy
 from DuplicateAttribute import DuplicateAttribute
 from SelfClosingElement import SelfClosingElement
 from UnexpectedToken import UnexpectedToken
@@ -24,6 +25,11 @@ def block_text(string):
 
     return string
 
+
+def is_javascript_loop(string):
+    pattern = r"^\s*(for|while)\s*\(.+\)\s*$"
+    match = re.search(pattern, string)
+    return bool(match)
 
 class Tree:
     def __init__(self, type, value='', trees=[]):
@@ -144,6 +150,7 @@ class Tree:
         return code
 
     def to_html(self, indentation="\n", condition=""):
+        global context
         string = ""
 
         match self.type:
@@ -165,21 +172,48 @@ class Tree:
 
             case 'code1':
                 code = self.trees[0].get_code()
-                context.execute(code)
+                try:
+                    context.execute(code)
+                except Exception as e:
+                    raise UnexpectedToken(f'Unexpected token: ' + str(e))
 
             case 'code2':
                 code = self.trees[0].get_code()
 
-                context.to_html = self.trees[2].to_html
-                context.execute(f'''
-                var result = "";
+                if is_javascript_loop(code):
+                    # Save the JS context
+                    variables = dir(context)
+                    previous_context = js2py.EvalJs({})
+                    for variable in variables:
+                        setattr(previous_context, variable, getattr(context, variable))
 
-                {code}{{
-                    result += to_html({indentation});
-                }}
-                ''')
-                result = context.eval('result')
-                return result
+                    context.to_html = self.trees[2].to_html
+                    context.execute(f'''
+                                    var result1234567890 = "";
+                                    {code}{{
+                                        result1234567890 += to_html({indentation});
+                                    }}
+                                    ''')
+                    result = context.eval('result1234567890')
+
+                    context = previous_context
+                    string += result
+
+                else:
+                    try:
+                        # Save the JS context
+                        previous_context = js2py.EvalJs({})
+                        variables = dir(context)
+                        for variable in variables:
+                            setattr(previous_context, variable, getattr(context, variable))
+
+                        context.execute(code)
+                        string += self.trees[2].to_html(indentation)
+                        context = previous_context
+                        context.execute(code)
+
+                    except Exception as e:
+                        raise UnexpectedToken(f'Unexpected token: ' + str(e))
 
             case 'conditional1':
                 # conditional : conditional_begin conditional_middle conditional_final
@@ -234,7 +268,10 @@ class Tree:
                         middle = self.trees[1]
 
                         for tree in middle.trees:
-                            result = context.eval(tree.value)
+                            try:
+                                result = context.eval(tree.value)
+                            except:
+                                pass
                             if result:
                                 if len(tree.trees) > 0:
                                     string += tree.trees[1].to_html(indentation)
@@ -261,19 +298,26 @@ class Tree:
 
             case 'iteration1':
                 # iteration : EACH IDENTIFIER IN JSCODE INDENT lines DEDENT
-                context.execute('iteration1 = ' + self.trees[1].value)
-                iterator = context.eval('iteration1')
+                try:
+                    context.execute('iteration1 = ' + self.trees[1].value)
+                    iterator = context.eval('iteration1')
+                except Exception as e:
+                    raise UnexpectedToken(f'Unexpected token: ' + str(e))
                 for val in iterator:
                     if type(val) == str:
                         val = '"' + val + '"'
+
                     context.execute(self.trees[0].value + '=' + str(val))
                     string += self.trees[3].to_html(indentation)
 
             case 'iteration2':
                 # iteration : EACH IDENTIFIER COMMA IDENTIFIER IN JSCODE INDENT lines DEDENT
-                context.execute('iteration2 = ' + self.trees[2].value)
-                iterator = context.eval('iteration2')
-                aux = context.eval('Array.isArray(iteration2)')
+                try:
+                    context.execute('iteration2 = ' + self.trees[2].value)
+                    iterator = context.eval('iteration2')
+                    aux = context.eval('Array.isArray(iteration2)')
+                except Exception as e:
+                    raise UnexpectedToken(f'Unexpected token: ' + str(e))
 
                 if aux:
                     i = 0
@@ -294,7 +338,10 @@ class Tree:
 
             case 'iteration3':
                 # iteration : WHILE CONDITION INDENT lines DEDENT
-                cond = context.eval(self.trees[0].value)
+                try:
+                    cond = context.eval(self.trees[0].value)
+                except Exception as e:
+                    raise UnexpectedToken(f'Unexpected token: ' + str(e))
                 while cond:
                     string += self.trees[2].to_html(indentation)
                     cond = context.eval(self.trees[0].value)
@@ -544,7 +591,11 @@ class Tree:
                 result = False
 
                 for tree in self.trees[0].trees:
-                    result = context.eval(condition + ' == ' + tree.trees[0].value)
+                    try:
+                        result = context.eval(condition + ' == ' + tree.trees[0].value)
+                    except Exception as e:
+                        raise UnexpectedToken(f'Unexpected token: ' + str(e))
+
                     if result:
                         string += tree.trees[1].to_html(indentation)
                         break
@@ -554,7 +605,11 @@ class Tree:
 
             case 'casesdefault2':
                 for tree in self.trees[0].trees:
-                    result = context.execute(condition + ' == ' + tree.trees[0].value)
+                    try:
+                        result = context.eval(condition + ' == ' + tree.trees[0].value)
+                    except Exception as e:
+                        raise UnexpectedToken(f'Unexpected token: ' + str(e))
+
                     if result:
                         string += tree.trees[1].to_html(indentation)
                         break
