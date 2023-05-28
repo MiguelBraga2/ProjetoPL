@@ -3,10 +3,14 @@ from yacc_parser import parser
 import sys
 
 data = """
+ul
+  doctypeola     manos               
+  li Item B
+  li Item C
 """
 
-for line in sys.stdin:
-    data += line
+#for line in sys.stdin:
+#    data += line
 
 if data[-1] != '\n':
     data += '\n'

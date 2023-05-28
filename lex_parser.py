@@ -12,7 +12,7 @@ reserved = {
     'each': 'EACH',
     'when': 'WHEN',
     'default': 'DEFAULT',
-    'case': 'CASE'
+    'case': 'CASE',
 }
 
 # Define the tokens for PugJS
@@ -46,8 +46,8 @@ tokens = (
     'DEFAULT',
     'CASE',
     'ELSEIF',
-    'NEWLINE'
-    # falta dois pontos e |
+    'NEWLINE',
+    'DOCTYPE'
 )
 
 # Define the states for pugjs
@@ -301,19 +301,6 @@ def t_JSCODE(t):
     return t
 
 
-# Define a rule for the STYLE 
-def t_assign_STYLE(t):
-    r'\{[^\}]*\}'
-    t.lexer.newline = False
-    t.value = t.value.replace(" ", "")
-    t.value = t.value.replace(",", ";")
-    t.value = t.value.replace("'", "")
-    t.value = t.value.replace("\"", "")
-    t.value = t.value[:-1] + ';}'
-    t.lexer.pop_state()
-    return t
-
-
 # Define a rule for the JSCODE in assign state 
 def t_assign_JSCODE(t):
     r'.+'
@@ -416,6 +403,10 @@ def t_ELSEIF(t):
     t.lexer.newline = False
     return t
 
+
+def t_DOCTYPE(t):
+    r'(?<=(\s|\[))doctype.*'
+    return t
 
 # Define a rule for the TAG token
 def t_TAG(t):
