@@ -275,18 +275,23 @@ class Tree:
                 context.execute('iteration2 = ' + self.trees[2].value)
                 iterator = context.eval('iteration2')
                 aux = context.eval('Array.isArray(iteration2)')
-                i = 0
-                for val in iterator:
-                    if type(val) == str:
-                        val = '"' + val + '"'
-                    context.execute(self.trees[0].value + ' = ' + val)
-                    if not aux:
-                        context.execute(self.trees[1].value + ' = ' + 'iteration2[' + str(val) + ']')
-                    else:
-                        context.execute(self.trees[1].value + ' = ' + str(i))
 
-                    i += 1
-                    string += self.trees[4].to_html(indentation)
+                if aux:
+                    i = 0
+                    for val in iterator:
+                        if type(val) == str:
+                            val = '"' + val + '"'
+                        context.execute(self.trees[0].value + ' = ' + val)
+                        context.execute(self.trees[1].value + ' = ' + str(i))
+                        i += 1
+                        string += self.trees[4].to_html(indentation)
+                else:
+                    for key in iterator:
+                        if type(key) == str:
+                            key = '"' + key + '"'
+                        context.execute(self.trees[1].value + ' = ' + key)
+                        context.execute(self.trees[0].value + ' = ' + 'iteration2[' + str(key) + ']')
+                        string += self.trees[4].to_html(indentation)
 
             case 'iteration3':
                 # iteration : WHILE CONDITION INDENT lines DEDENT
