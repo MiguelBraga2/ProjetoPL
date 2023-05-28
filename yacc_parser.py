@@ -93,11 +93,16 @@ def p_cases(p):
     else:   
         p[0] = Tree(type='cases', trees=[p[1]])
 
+
 def p_case(p): 
     """    
     case : WHEN CONDITION INDENT lines DEDENT
+         | WHEN CONDITION
     """
-    p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2]), p[4]])
+    if len(p) == 6:
+        p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2]), p[4]])
+    else:
+        p[0] = Tree(type='case', trees=[Tree(type='CONDITION', value=p[2])])
 
 
 # COMMENT

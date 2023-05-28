@@ -29,6 +29,7 @@ cases : cases case
       | case  
 
 case : WHEN CONDITION INDENT lines DEDENT
+     | WHEN CONDITION
 
 comment : COMMENT comment_text
         | COMMENT

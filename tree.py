@@ -576,28 +576,48 @@ class Tree:
 
                 result = False
 
-                for tree in self.trees[0].trees:
+                for i in range(len(self.trees[0].trees)):
                     try:
-                        result = context.eval(condition + ' == ' + tree.trees[0].value)
+                        result = context.eval(condition + ' == ' + self.trees[0].trees[i].trees[0].value)
                     except Exception as e:
                         raise UnexpectedToken(f'Unexpected token: ' + str(e))
 
+                    if result and len(self.trees[0].trees[i].trees) == 1:
+                        i += 1
+                        b_aux = False
+                        while i < len(self.trees[0].trees):
+                            if len(self.trees[0].trees[i].trees) != 1:
+                                string += self.trees[0].trees[i].trees[1].to_html(indentation)
+                                b_aux = True
+                                break
+                        if not b_aux:
+                            result = False
+                        break
+
                     if result:
-                        string += tree.trees[1].to_html(indentation)
+                        string += self.trees[0].trees[i].trees[1].to_html(indentation)
                         break
 
                 if not result:
                     string += default.to_html(indentation)
 
             case 'casesdefault2':
-                for tree in self.trees[0].trees:
+                for i in range(len(self.trees[0].trees)):
                     try:
-                        result = context.eval(condition + ' == ' + tree.trees[0].value)
+                        result = context.eval(condition + ' == ' + self.trees[0].trees[i].trees[0].value)
                     except Exception as e:
                         raise UnexpectedToken(f'Unexpected token: ' + str(e))
 
+                    if result and len(self.trees[0].trees[i].trees) == 1:
+                        i += 1
+                        while i < len(self.trees[0].trees):
+                            if len(self.trees[0].trees[i].trees) != 1:
+                                string += self.trees[0].trees[i].trees[1].to_html(indentation)
+                                break
+                        break
+
                     if result:
-                        string += tree.trees[1].to_html(indentation)
+                        string += self.trees[0].trees[i].trees[1].to_html(indentation)
                         break
 
             case 'casesdefault3':
