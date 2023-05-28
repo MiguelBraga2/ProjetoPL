@@ -265,8 +265,8 @@ class Tree:
 
             case 'comment1':
                 # comment : COMMENT comment_text
-                fst_line = self.trees[0].value[2:]
-                lines = [tree.value.replace('\t', '    ') for tree in self.trees[1].trees]
+                fst_line = self.trees[0].value[2:] # Retira o //
+                lines = [tree.value.replace('\t', '    ') for tree in self.trees[1].trees] # Substituii \t por '    ' nas linhas seguintes
                 min_spaces = min(len(line) - len(line.lstrip()) for line in lines) if lines else 0
                 stripped_lines = [line[min_spaces:] for line in lines]
                 indented_lines = [line + '\n' for line in stripped_lines[:-1]] + [stripped_lines[-1]]
