@@ -1,0 +1,2 @@
+a: .class ola:p
+a: .class: p ola

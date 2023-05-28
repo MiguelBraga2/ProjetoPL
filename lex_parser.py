@@ -468,6 +468,12 @@ def t_DOT(t):
     t.lexer.newline = False
     return t
 
+def t_doispontos(t):
+    r'\:[ \t]*'
+    t.type = 'INDENT'
+    t.lexer.newline = True
+    t.lexer.indent_stack.append(t.lexer.indent_stack[-1]+2)
+    return t
 
 # Define a rule for the TEXT token
 def t_TEXT(t):

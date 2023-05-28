@@ -1,7 +1,8 @@
 from lex_parser import lexer
 
 data = """
-a(style={color: 'red', background: 'green'})
+a: .class ola:
+a: a: p ola
 """
 
 lexer.input(data)
