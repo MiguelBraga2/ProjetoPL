@@ -161,7 +161,7 @@ class Tree:
                 else:
                     res = re.sub(r'\s+', ' ', res)
                     res = re.split(r'DOCTYPE', res)
-                    string += indentation + '<!DOCTYPE ' + res[-1] + '>'
+                    string += indentation + '<!DOCTYPE ' + res[-1].lstrip() + '>'
 
             case 'code1':
                 code = self.trees[0].get_code()

@@ -1,8 +1,8 @@
 <a>
-  <div class="class">ola:</div>
+  <div class="class">ola:p</div>
 </a>
 <a>
-  <a>
+  <div class="class">
     <p>ola</p>
-  </a>
+  </div>
 </a>
