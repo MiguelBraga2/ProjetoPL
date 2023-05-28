@@ -1,0 +1,8 @@
+- var cor = "preto"
+- var palavra = "casaco"
+
+html
+  head
+  body
+    - var palavra = palavra + " " + cor
+    p= palavra[10]
