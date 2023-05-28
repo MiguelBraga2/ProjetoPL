@@ -1,6 +1,6 @@
+import random
 import js2py
 import re
-import copy
 from DuplicateAttribute import DuplicateAttribute
 from SelfClosingElement import SelfClosingElement
 from UnexpectedToken import UnexpectedToken
@@ -182,14 +182,15 @@ class Tree:
 
                 if is_javascript_loop(code):
 
-                    context.to_html = self.trees[2].to_html
+                    random_number = random.randint(1, 100000000000000)
+                    setattr(context, 'to_html' + str(random_number), self.trees[2].to_html)
                     context.execute(f'''
-                                    var result1234567890 = "";
+                                    var result{random_number} = "";
                                     {code}{{
-                                        result1234567890 += to_html({indentation});
+                                        result{random_number} += to_html{random_number}({indentation});
                                     }}
                                     ''')
-                    result = context.eval('result1234567890')
+                    result = context.eval(f'result{random_number}')
 
                     string += result
 

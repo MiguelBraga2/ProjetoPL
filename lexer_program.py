@@ -1,8 +1,9 @@
 from lex_parser import lexer
 
 data = """
-- var x = 1
-  li= x
+- for(let i=0; i<100; i++)
+    - for(let j=0; j<2; j++)
+        p= 2*i + j
 """
 
 lexer.input(data)
