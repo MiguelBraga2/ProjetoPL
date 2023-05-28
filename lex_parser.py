@@ -23,17 +23,14 @@ tokens = (
     'CLASS',  # HTML classes
     'ID',  # HTML ids (1 max per tag)
     'TAG',
-    'IDENTIFIER',  # Variable name
     'COMMA',
     'EQUALS',
-    'STRING',  # Attribute value can be a string
     'BAR',
     'BEGININTERP',  # Valid for Javascript and Tag Interpolation
     'ENDINTERP',
     'DOT',
     'TEXT',
     'COMMENT',
-    'NUMBER',
     'JSCODE',
     'IF',
     'ELSE',
@@ -47,7 +44,8 @@ tokens = (
     'CASE',
     'ELSEIF',
     'NEWLINE',
-    'DOCTYPE'
+    'DOCTYPE',
+    'IDENTIFIER'
 )
 
 states = (
@@ -325,27 +323,6 @@ def t_interpolation_JSCODE(t):
     r'[^\}]+'
     t.lexer.newline = False
     return t
-
-# In an interpolation state, a string can be delimited by " or '
-def t_interpolation_STRING(t):
-    r'\'[^\']*\'|"[^\"]*"'
-    t.lexer.newline = False
-    return t
-
-
-# Normal representation of a floating point / integer number
-def t_interpolation_NUMBER(t):
-    r'\d+\.\d+'
-    t.lexer.newline = False
-    return t
-
-
-# A variable inside interpolation state is a normal sequence of characters
-def t_interpolation_IDENTIFIER(t):
-    r'\w+'
-    t.lexer.newline = False
-    return t
-
 
 # When we leave the interpolation
 def t_interpolation_ENDINTERP(t):
