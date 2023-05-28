@@ -12,7 +12,7 @@ reserved = {
     'each': 'EACH',
     'when': 'WHEN',
     'default': 'DEFAULT',
-    'case': 'CASE'
+    'case': 'CASE',
 }
 
 # Define the tokens for PugJS
@@ -46,8 +46,8 @@ tokens = (
     'DEFAULT',
     'CASE',
     'ELSEIF',
-    'NEWLINE'
-    # falta dois pontos e |
+    'NEWLINE',
+    'DOCTYPE'
 )
 
 # Define the states for pugjs
@@ -66,7 +66,7 @@ states = (
 
 
 # Function to get indentation level 
-def indetation_level(line):
+def indentation_level(line):
     count = 0
     for char in line:
         if char == ' ':
@@ -81,7 +81,7 @@ def t_INITIAL_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -115,7 +115,7 @@ def t_ignorecomment_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -139,7 +139,7 @@ def t_code_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -163,7 +163,7 @@ def t_comment_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -201,7 +201,7 @@ def t_block_indentation(t):  # Rever
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -298,19 +298,6 @@ def t_JSCODE(t):
     t.value = t.value[1:]
     if t.value.isspace() or t.value == "":
         t.lexer.push_state('code')
-    return t
-
-
-# Define a rule for the STYLE 
-def t_assign_STYLE(t):
-    r'\{[^\}]*\}'
-    t.lexer.newline = False
-    t.value = t.value.replace(" ", "")
-    t.value = t.value.replace(",", ";")
-    t.value = t.value.replace("'", "")
-    t.value = t.value.replace("\"", "")
-    t.value = t.value[:-1] + ';}'
-    t.lexer.pop_state()
     return t
 
 
@@ -416,6 +403,10 @@ def t_ELSEIF(t):
     t.lexer.newline = False
     return t
 
+
+def t_DOCTYPE(t):
+    r'(?<=(\s|\[))doctype.*'
+    return t
 
 # Define a rule for the TAG token
 def t_TAG(t):

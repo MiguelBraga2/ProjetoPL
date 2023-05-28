@@ -2,6 +2,7 @@ import js2py
 import re
 from DuplicateAttribute import DuplicateAttribute
 from SelfClosingElement import SelfClosingElement
+from UnexpectedToken import UnexpectedToken
 
 context = js2py.EvalJs({})
 
@@ -153,6 +154,15 @@ class Tree:
             case 'line':
                 string += self.trees[0].to_html(indentation)
 
+            case 'DOCTYPE':
+                res = re.sub('doctype', 'DOCTYPE', self.value.rstrip())
+                if res == 'DOCTYPE':
+                    string += indentation + '<!DOCTYPE html>'
+                else:
+                    res = re.sub(r'\s+', ' ', res)
+                    res = re.split(r'DOCTYPE', res)
+                    string += indentation + '<!DOCTYPE ' + res[-1] + '>'
+
             case 'code1':
                 code = self.trees[0].get_code()
                 context.execute(code)
@@ -268,11 +278,11 @@ class Tree:
                 for val in iterator:
                     if type(val) == str:
                         val = '"' + val + '"'
-                    context.execute(self.trees[1].value + ' = ' + val)
+                    context.execute(self.trees[0].value + ' = ' + val)
                     if not aux:
-                        context.execute(self.trees[0].value + ' = ' + 'iteration2[' + str(val) + ']')
+                        context.execute(self.trees[1].value + ' = ' + 'iteration2[' + str(val) + ']')
                     else:
-                        context.execute(self.trees[0].value + ' = ' + str(i))
+                        context.execute(self.trees[1].value + ' = ' + str(i))
 
                     i += 1
                     string += self.trees[4].to_html(indentation)
@@ -456,7 +466,7 @@ class Tree:
             case 'tag1':
                 # tag : TAG attributes
                 if self.trees[0].value == 'div' and self.trees[1].trees[0].type == 'ATTRIBUTES':
-                    raise ValueError('unexpected token "attributes"')
+                    raise UnexpectedToken('unexpected token "attributes"')
 
                 classes, id, attributes = self.trees[1].to_html_attributes()
                 atts = ' '.join([f'{chave}="{valor}"' for chave, valor in attributes.items()])
@@ -466,9 +476,9 @@ class Tree:
 
                 cls = " ".join(classes)
 
-                if id == None and cls == '':
+                if id is None and cls == '':
                     string += f'<{self.trees[0].value}{atts}>'
-                elif id == None:
+                elif id is None:
                     string += f'<{self.trees[0].value} class="{" ".join(classes)}"{atts}>'
                 elif cls == '':
                     string += f'<{self.trees[0].value} id="{id}"{atts}>'
