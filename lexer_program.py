@@ -1,12 +1,8 @@
 from lex_parser import lexer
 
 data = """
-- var text = "ola123"
-- var num = 145.5
-p.
-  This is a very long and boring paragraph that spans multiple lines. #{num}
-  Suddenly there is a #[strong strongly worded phrase] that cannot be
-  #[em ignored] #{text}.
+.class1(class="class")
+.class2#id1(atta=1  class="class3 ola")
 """
 
 lexer.input(data)

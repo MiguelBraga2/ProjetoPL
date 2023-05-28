@@ -1,0 +1,2 @@
+.class1(class="class")
+.class2#d1(atta=1  class="class3 ola")
