@@ -390,7 +390,7 @@ def t_iteration_IDENTIFIER(t):
 
 # In the conditional state, CONDITION can be read with .+
 def t_conditional_CONDITION(t):
-    r'.+'
+    r'[^\n:]+'
     t.lexer.pop_state()
     t.lexer.newline = False
     return t
