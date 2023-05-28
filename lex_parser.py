@@ -16,7 +16,6 @@ reserved = {
     'case': 'CASE',
 }
 
-# Define the tokens for PugJS
 tokens = (
     'ATTRIBUTES',  # Everything between ( and )
     'INDENT',  # For blocks indented
@@ -51,7 +50,6 @@ tokens = (
     'DOCTYPE'
 )
 
-# Define the states for pugjs
 states = (
     ('ignorecomment', 'exclusive'),  # In this state, we don't want to read anything
     ('assign', 'exclusive'),  # Enables us to read JSCODE like reading TEXT (.*)
@@ -76,8 +74,14 @@ def indentation_level(line):
             count += 4
     return count
 
+# Indentation is when a line starts with '\n' and a sequence of ' ' and '\t'
 
-# Define a rule for the indentation
+# Execute one of 5 actions:
+# - keep code in the same indentation
+# - indent
+# - dedent and call itself again
+# - dedent and return
+# - error
 def t_INITIAL_indentation(t):
     r'\n[ \t]*'
 
@@ -88,30 +92,28 @@ def t_INITIAL_indentation(t):
 
     t.lexer.newline = True
 
-    if previous_indentation == current_indentation:
+    if previous_indentation == current_indentation: # - keep code in the same indentation
         t.lexer.lineno += 1
         return
 
     elif previous_indentation > current_indentation:
         aux = t.lexer.indent_stack[-1]
         t.lexer.indent_stack.pop()
-        if t.lexer.indent_stack[-1] > current_indentation:
+        if t.lexer.indent_stack[-1] > current_indentation: # - dedent and call itself again
             t.lexer.skip(-len(t.value))
-        elif t.lexer.indent_stack[-1] < current_indentation:
+        elif t.lexer.indent_stack[-1] < current_indentation: # - error
             raise IndentationException(f'Inconsistent indentation. Expecting either {t.lexer.indent_stack[-1]} or {aux} spaces/tabs on line {t.lexer.lineno}.')
-        else:
+        else: # - dedent and return
             t.lexer.lineno += 1
         t.type = 'DEDENT'
         return t
 
-    else:
+    else: # - indent
         t.lexer.lineno += 1
         t.lexer.indent_stack.append(current_indentation)
         t.type = 'INDENT'
         return t
-
-
-# Define a rule for the indentation in the ignorecomment state
+    
 def t_ignorecomment_indentation(t):
     r'\n[ \t]*'
 
@@ -134,8 +136,6 @@ def t_ignorecomment_indentation(t):
         t.lexer.lineno += 1
         return
 
-
-# Define a rule for the indentation in the code state
 def t_code_indentation(t):
     r'\n[ \t]*'
 
@@ -158,8 +158,6 @@ def t_code_indentation(t):
         t.lexer.lineno += 1
         return
 
-
-# Define a rule for the indentation in the comment state
 def t_comment_indentation(t):
     r'\n[ \t]*'
 
@@ -238,14 +236,17 @@ def t_block_indentation(t):  # Rever
         # sempres dois espaços antes do texto do block
 
 
-# Define a rule to enter the attributes state
+# How to enter the attributes state
 def t_lparen(t):
     r'\('
     t.lexer.newline = False
     t.lexer.push_state('attributes')
 
 
-# Define a rule for the attributes
+# Attributes is everything between ( and )
+# Can contain ( and ) in the middle
+# So we need to have a counter for the number of parenthesis opened 
+# and store the attributes in a buffer
 def t_attributes_ATTRIBUTES(t):
     r'[^\)\(]*[\(\)]'
     t.lexer.attributesBuffer += t.value
@@ -262,29 +263,28 @@ def t_attributes_ATTRIBUTES(t):
             return t
 
 
-# Define a rule for the unbuffered comments
+# Comments that will be ignored start with //-
 def t_ignorecomment(t):
     r'//-.*'
     t.lexer.newline = False
     t.lexer.push_state('ignorecomment')
 
 
-# Define a rule for the comments
+# Comments that pass to the HTML file start with //
 def t_COMMENT(t):
     r'//.*'
     t.lexer.newline = False
     t.lexer.push_state('comment')
     return t
 
-
-# Define a rule for the BAR symbol
+# For explicit self-closing tags 
 def t_BAR(t):
     r'\/'
     t.lexer.newline = False
     return t
 
 
-# Define a rule for the EQUALS symbol
+# For assignment of text
 def t_EQUALS(t):
     r'\='
     t.lexer.newline = False
@@ -292,17 +292,17 @@ def t_EQUALS(t):
     return t
 
 
-# Define a rule for the JSCODE 
+# JSCODE is everything after a line starting with -
 def t_JSCODE(t):
     r'\-.*'
     t.lexer.newline = False
-    t.value = t.value[1:]
-    if t.value.isspace() or t.value == "":
+    t.value = t.value[1:] # Remove the / starting the line
+    if t.value.isspace() or t.value == "": # if the line with the - doesn't have anything it is a block of code
         t.lexer.push_state('code')
     return t
 
-
-# Define a rule for the JSCODE in assign state 
+# When we are assigning to a tag, we want to read all code after it
+# Can contain expressions, concatenation of variables, etc
 def t_assign_JSCODE(t):
     r'.+'
     t.lexer.newline = False
@@ -310,7 +310,7 @@ def t_assign_JSCODE(t):
     return t
 
 
-#  Define a rule for the begin interpolation symbols
+# Start of both tag and variable interpolation
 def t_BEGININTERP(t):
     r'\#(\{|\[)'
     if t.value == '#{':
@@ -318,33 +318,32 @@ def t_BEGININTERP(t):
         t.lexer.newline = False
     elif t.value == '#[':
         t.lexer.push_state('taginterpolation')
-        t.lexer.newline = True
-
+        t.lexer.newline = True # In this case we want this set to True, because we can start a new tag from here
     return t
 
 
-#  Define a rule for the STRING
+# In an interpolation state, a string can be delimited by " or '
 def t_interpolation_STRING(t):
     r'\'[^\']*\'|"[^\"]*"'
     t.lexer.newline = False
     return t
 
 
-#  Define a rule for the NUMBER
+# Normal representation of a floating point / integer number
 def t_interpolation_NUMBER(t):
-    r'\d+'
+    r'\d+\.\d+'
     t.lexer.newline = False
     return t
 
 
-#  Define a rule for the IDENTIFIER
+# A variable inside interpolation state is a normal sequence of characters
 def t_interpolation_IDENTIFIER(t):
     r'\w+'
     t.lexer.newline = False
     return t
 
 
-#  Define a rule for the end interpolation symbol
+# When we leave the interpolation
 def t_interpolation_ENDINTERP(t):
     r'(\}|\])'
     t.lexer.newline = False
@@ -352,7 +351,7 @@ def t_interpolation_ENDINTERP(t):
     return t
 
 
-#  Define a rule for the end interpolation symbol
+# When we leave the tag interpolation
 def t_taginterpolation_ENDINTERP(t):
     r'(\}|\])'
     t.lexer.newline = False
@@ -360,7 +359,7 @@ def t_taginterpolation_ENDINTERP(t):
     return t
 
 
-#  Define a rule for the JSCODE in iteration state
+# An expression to be iterated must have before the keyword 'in'
 def t_iteration_JSCODE(t):
     r'(?<=(in\s)).*'
     t.lexer.pop_state()
@@ -368,28 +367,28 @@ def t_iteration_JSCODE(t):
     return t
 
 
-#  Define a rule for the COMA symbol
+# Normal comma (for iteration)
 def t_iteration_COMMA(t):
     r','
     t.lexer.newline = False
     return t
 
 
-#  Define a rule for the IN word
+# IN token (for iteration)
 def t_iteration_IN(t):
     r'in\b'
     t.lexer.newline = False
     return t
 
 
-#  Define a rule for the IDENTIFIER
+# Iterator variable (for iteration)
 def t_iteration_IDENTIFIER(t):
     r'\w+'
     t.lexer.newline = False
     return t
 
 
-#  Define a rule for the CONDITION of conditional
+# In the conditional state, CONDITION can be read with .+
 def t_conditional_CONDITION(t):
     r'.+'
     t.lexer.pop_state()
@@ -397,26 +396,27 @@ def t_conditional_CONDITION(t):
     return t
 
 
-#  Define a rule for the ELSEIF token
+# Else if token
+# Enters conditional state
 def t_ELSEIF(t):
     r'else[ ]if'
     t.lexer.push_state('conditional')
     t.lexer.newline = False
     return t
 
-
+# DOCTYPE line 
 def t_DOCTYPE(t):
     r'(?<=(\s|\[))doctype.*'
     return t
 
 
-# Define a rule for the TAG token
+# A TAG must have before a space 
 def t_TAG(t):
     r'(?<=\s)[A-Za-z]\w*'
-    t.type = reserved.get(t.value, 'TAG')
+    t.type = reserved.get(t.value, 'TAG') # We want to check for reserved keywords
     t.lexer.newline = False
 
-    match t.type:
+    match t.type: # Enter the restricted states
         case 'UNLESS' | 'WHILE' | 'CASE' | 'WHEN' | 'IF':
             t.lexer.push_state('conditional')
         case 'EACH':
@@ -426,10 +426,10 @@ def t_TAG(t):
     return t
 
 
-# Define a rule for the ID token
+# An id can have '_' , '-' and normal characters
 def t_ID(t):
     r'\#[\w\-_]+'
-    if t.lexer.newline:
+    if t.lexer.newline: # If no tag is read, it is a div
         t.lexer.skip(-len(t.value))
         t.type = 'TAG'
         t.value = 'div'
@@ -440,7 +440,7 @@ def t_ID(t):
     return t
 
 
-# Define a rule for the CLASS token
+# Same logic as ID
 def t_CLASS(t):
     r'\.[\w\-_]+'
     if t.lexer.newline:
@@ -454,21 +454,23 @@ def t_CLASS(t):
     return t
 
 
-# Define a rule for the DOT token
+# Defines the beginning of a block
 def t_DOT(t):
     r'\.'
     t.lexer.push_state('block')
     t.lexer.newline = False
     return t
 
+# For block expansion
 def t_doispontos(t):
     r'\:[ \t]*'
-    t.type = 'INDENT'
+    t.type = 'INDENT' # We deal the inner tag as an indented tag
     t.lexer.newline = True
-    t.lexer.indent_stack.append(t.lexer.indent_stack[-1]+2)
+    t.lexer.indent_stack.append(t.lexer.indent_stack[-1]+2) # Must add the new indentation level
     return t
 
-# Define a rule for the TEXT token
+# Text can contain interpolation, so we need to check for that
+# It can also be inside < and >, and can have no interpolation
 def t_TEXT(t):
     r'.+?(?=\#(\{|\[))|<.*?>|.+'
     t.lexer.newline = False
@@ -476,7 +478,7 @@ def t_TEXT(t):
         return
     return t
 
-
+# Begin of interpolation in the taginterpolation state
 def t_taginterpolation_BEGININTERP(t):
     r'\#(\{|\[)'
     if t.value == '#{':
@@ -487,7 +489,7 @@ def t_taginterpolation_BEGININTERP(t):
         t.lexer.newline = True
     return t
 
-
+# ID inside taginterpolation (cannot have an endinterpolation token before)
 def t_taginterpolation_ID(t):
     r'(?<!(\]|\}))\#[\w\-_]+'
     if t.lexer.newline:
@@ -500,8 +502,7 @@ def t_taginterpolation_ID(t):
     t.value = t.value[1:]
     return t
 
-
-# Define a rule for the CLASS token
+# CLASS inside taginterpolation (cannot have an endinterpolation token before)
 def t_taginterpolation_CLASS(t):
     r'(?<!(\]|\}))\.[\w\-_]+'
     if t.lexer.newline:
@@ -514,11 +515,13 @@ def t_taginterpolation_CLASS(t):
     t.value = t.value[1:]
     return t
 
+# Same for lparen (begin of attributes)
 def t_taginterpolation_lparen(t):
     r'(?<!(\]|\}))\('
     t.lexer.newline = False
     t.lexer.push_state('attributes')
 
+# Read a TAG inside taginterpolation (must be immediately after the BEGININTERP token)
 def t_taginterpolation_TAG(t):
     r'(?<=\[)[A-Za-z]\w*'
     t.type = reserved.get(t.value, 'TAG')
@@ -531,6 +534,7 @@ def t_taginterpolation_TAG(t):
             pass
     return t
 
+# TEXT inside taginterpolation must be followed by BEGININTERP or ENDINTERP
 def t_taginterpolation_TEXT(t):
     r'.+?((?=\#(\{|\[))|(?=\]))'
     t.lexer.newline = False
@@ -539,27 +543,27 @@ def t_taginterpolation_TEXT(t):
     return t
 
 
-# Define a rule for the comment text
+# A comment can be mode of multiple TEXT lines(it will be joined after)
 def t_comment_TEXT(t):
     r'.+'
     t.lexer.newline = False
     return t
 
 
-# Define a rule for the javascript code
+# Code can be mode of multiple TEXT lines
 def t_code_TEXT(t):
     r'.+'
     t.lexer.newline = False
     return t
 
 
-# Define a rule for the ignorecomment text
+# Ignorecomments can be mode of multiple TEXT lines
 def t_ignorecomment_TEXT(t):
     r'.+'
     t.lexer.newline = False
 
 
-# Define a rule for the block BEFININTERP token
+# When we begin interpolation inside a block (similar to the normal BEGININTERP)
 def t_block_BEGININTERP(t):
     r'\#(\{|\[)'
     if t.value == '#{':
@@ -571,19 +575,19 @@ def t_block_BEGININTERP(t):
     return t
 
 
-# Define a rule for the block text
+# TEXT inside a block can have 0 or more occurences of interpolation (both tag and variable)
 def t_block_TEXT(t):
     r'.+?(?=(\#\{|\#\[))|.+'
     t.lexer.newline = False
     return t
 
 
-# Define an error handling function
+# error handling function
 def t_ANY_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
-
+# Ignore these characters inside these states
 t_ignore = ''
 t_assign_ignore = ' \t'
 t_ignorecomment_ignore = ''
