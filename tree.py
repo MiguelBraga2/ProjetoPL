@@ -181,11 +181,6 @@ class Tree:
                 code = self.trees[0].get_code()
 
                 if is_javascript_loop(code):
-                    # Save the JS context
-                    variables = dir(context)
-                    previous_context = js2py.EvalJs({})
-                    for variable in variables:
-                        setattr(previous_context, variable, getattr(context, variable))
 
                     context.to_html = self.trees[2].to_html
                     context.execute(f'''
@@ -196,21 +191,13 @@ class Tree:
                                     ''')
                     result = context.eval('result1234567890')
 
-                    context = previous_context
                     string += result
 
                 else:
                     try:
                         # Save the JS context
-                        previous_context = js2py.EvalJs({})
-                        variables = dir(context)
-                        for variable in variables:
-                            setattr(previous_context, variable, getattr(context, variable))
-
                         context.execute(code)
                         string += self.trees[2].to_html(indentation)
-                        context = previous_context
-                        context.execute(code)
 
                     except Exception as e:
                         raise UnexpectedToken(f'Unexpected token: ' + str(e))
