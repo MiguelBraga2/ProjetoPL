@@ -515,7 +515,7 @@ def t_taginterpolation_CLASS(t):
     return t
 
 def t_taginterpolation_lparen(t):
-    r'\('
+    r'(?<!(\]|\}))\('
     t.lexer.newline = False
     t.lexer.push_state('attributes')
 
