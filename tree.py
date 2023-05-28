@@ -6,7 +6,6 @@ from UnexpectedToken import UnexpectedToken
 
 context = js2py.EvalJs({})
 
-
 def block_text(string):
     count = 0
     for char in string:
@@ -23,7 +22,6 @@ def block_text(string):
         string = ' ' + string
 
     return string
-
 
 class Tree:
     def __init__(self, type, value='', trees=[]):
