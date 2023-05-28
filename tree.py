@@ -356,7 +356,7 @@ class Tree:
                     string += indentation + tag + self.trees[1].to_html() + '\n' + \
                               self.trees[3].to_html(indentation=indentation)
                     string += '\n' + indentation + '</' + tag_name + '>'
-                elif tag_name in ['input', 'br', 'img', 'meta', 'link']:
+                elif tag_name in ['input', 'br', 'img']:
                     raise SelfClosingElement(f'{tag_name} is a self closing element: <{tag_name}/> but contains nested content.')
                 else:
                     if tag_name == 'body':
@@ -378,7 +378,7 @@ class Tree:
                     string += indentation + tag + '\n' + \
                               self.trees[2].to_html(indentation=indentation)
                     string += '\n' + indentation + '</' + tag_name + '>'
-                elif tag_name in ['input', 'br','img', 'meta', 'link']:
+                elif tag_name in ['input', 'br','img']:
                     raise SelfClosingElement(f'{tag_name} is a self closing element: <{tag_name}/> but contains nested content.')
                 else:
                     if tag_name == 'body':
@@ -398,7 +398,7 @@ class Tree:
                 if tag_name == 'html':
                     string += indentation + tag + self.trees[1].to_html(
                         indentation) + '\n' + indentation + '</' + tag_name + '>'
-                elif tag_name in ['input', 'br','img', 'meta', 'link']:
+                elif tag_name in ['input', 'br','img']:
                     raise SelfClosingElement(f'{tag_name} is a self closing element: <{tag_name}/> but contains nested content.')
                 else:
                     if tag_name == 'body':
@@ -453,7 +453,7 @@ class Tree:
 
                     string += indentation + tag + indentation + ' ' * 2 + ''.join(indented_lines)[
                                                                           :-2] + '</' + tag_name + '>'
-                elif tag_name in ['input', 'br','img', 'meta', 'link']:
+                elif tag_name in ['input', 'br','img']:
                     raise SelfClosingElement(f'{tag_name} is a self closing element: <{tag_name}/> but contains nested content.')
                 else:
                     fst_line = lines.pop(0)
@@ -490,7 +490,7 @@ class Tree:
 
                 if tag_name == 'html':
                     string += indentation + tag + '\n' + indentation + '</' + tag_name + '>'
-                elif tag_name in ['input', 'br','img', 'meta', 'link']:
+                elif tag_name in ['input', 'br','img']:
                     string += tag[:-1] + ' />'
                 else:
 
