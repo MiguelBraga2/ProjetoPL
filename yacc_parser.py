@@ -25,6 +25,13 @@ def p_line(p):
     p[0] = Tree(type='line', trees=[p[1]]) 
 
 
+def p_line_doctype(p):
+    """
+    line : DOCTYPE
+    """
+    p[0] = Tree(type='line', trees=[Tree(type='DOCTYPE', value=p[1])])
+
+
 def p_code(p):
     """
     code : code_lines

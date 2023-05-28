@@ -8,6 +8,7 @@ line : tagline
      | conditional
      | iteration
      | switch
+     | DOCTYPE
 
 code : code_lines
      | code_lines INDENT lines DEDENT
