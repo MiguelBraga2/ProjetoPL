@@ -269,11 +269,11 @@ class Tree:
                 for val in iterator:
                     if type(val) == str:
                         val = '"' + val + '"'
-                    context.execute(self.trees[1].value + ' = ' + val)
+                    context.execute(self.trees[0].value + ' = ' + val)
                     if not aux:
-                        context.execute(self.trees[0].value + ' = ' + 'iteration2[' + str(val) + ']')
+                        context.execute(self.trees[1].value + ' = ' + 'iteration2[' + str(val) + ']')
                     else:
-                        context.execute(self.trees[0].value + ' = ' + str(i))
+                        context.execute(self.trees[1].value + ' = ' + str(i))
 
                     i += 1
                     string += self.trees[4].to_html(indentation)

@@ -66,7 +66,7 @@ states = (
 
 
 # Function to get indentation level 
-def indetation_level(line):
+def indentation_level(line):
     count = 0
     for char in line:
         if char == ' ':
@@ -81,7 +81,7 @@ def t_INITIAL_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -115,7 +115,7 @@ def t_ignorecomment_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -139,7 +139,7 @@ def t_code_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -163,7 +163,7 @@ def t_comment_indentation(t):
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
@@ -201,7 +201,7 @@ def t_block_indentation(t):  # Rever
     r'\n[ \t]*'
 
     # get the indentation level
-    current_indentation = indetation_level(t.value[1:])
+    current_indentation = indentation_level(t.value[1:])
     # get the previous indentation level
     previous_indentation = t.lexer.indent_stack[-1]
 
