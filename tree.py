@@ -157,9 +157,12 @@ class Tree:
 
             case 'DOCTYPE':
                 res = re.sub('doctype', 'DOCTYPE', self.value.rstrip())
-                res = re.sub(r'\s+', ' ', res)
-                res = re.split(r'DOCTYPE', res)
-                string += indentation + '<!DOCTYPE ' + res[-1] + '>'
+                if res == 'DOCTYPE':
+                    string += indentation + '<!DOCTYPE html>'
+                else:
+                    res = re.sub(r'\s+', ' ', res)
+                    res = re.split(r'DOCTYPE', res)
+                    string += indentation + '<!DOCTYPE ' + res[-1] + '>'
 
             case 'code1':
                 code = self.trees[0].get_code()
