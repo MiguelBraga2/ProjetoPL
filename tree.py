@@ -1,6 +1,7 @@
 import js2py
 import re
 from DuplicateAttribute import DuplicateAttribute
+from SelfClosingElement import SelfClosingElement
 
 context = js2py.EvalJs({})
 
@@ -286,8 +287,9 @@ class Tree:
 
             case 'comment1':
                 # comment : COMMENT comment_text
-                fst_line = self.trees[0].value[2:] # Retira o //
-                lines = [tree.value.replace('\t', '    ') for tree in self.trees[1].trees] # Substituii \t por '    ' nas linhas seguintes
+                fst_line = self.trees[0].value[2:]  # Retira o //
+                lines = [tree.value.replace('\t', '    ') for tree in
+                         self.trees[1].trees]  # Substituii \t por '    ' nas linhas seguintes
                 min_spaces = min(len(line) - len(line.lstrip()) for line in lines) if lines else 0
                 stripped_lines = [line[min_spaces:] for line in lines]
                 indented_lines = [line + '\n' for line in stripped_lines[:-1]] + [stripped_lines[-1]]
@@ -307,6 +309,8 @@ class Tree:
                     string += indentation + tag + self.trees[1].to_html() + '\n' + \
                               self.trees[3].to_html(indentation=indentation)
                     string += '\n' + indentation + '</' + tag_name + '>'
+                elif tag_name == 'input':
+                    raise SelfClosingElement('input is a self closing element: <input/> but contains nested content.')
                 else:
                     if tag_name == 'body':
                         p = '\n'
@@ -327,14 +331,15 @@ class Tree:
                     string += indentation + tag + '\n' + \
                               self.trees[2].to_html(indentation=indentation)
                     string += '\n' + indentation + '</' + tag_name + '>'
+                elif tag_name == 'input':
+                    raise SelfClosingElement('input is a self closing element: <input/> but contains nested content.')
                 else:
                     if tag_name == 'body':
                         p = '\n'
                     else:
                         p = ''
 
-                    string += p + indentation + tag + \
-                              self.trees[2].to_html(indentation=indentation + ' ' * 2)
+                    string += p + indentation + tag + self.trees[2].to_html(indentation=indentation + ' ' * 2)
                     string += indentation + '</' + tag_name + '>'
 
             case 'tagline3':
@@ -346,8 +351,9 @@ class Tree:
                 if tag_name == 'html':
                     string += indentation + tag + self.trees[1].to_html(
                         indentation) + '\n' + indentation + '</' + tag_name + '>'
+                elif tag_name == 'input':
+                    raise SelfClosingElement('input is a self closing element: <input/> but contains nested content.')
                 else:
-
                     if tag_name == 'body':
                         p = '\n'
                     else:
@@ -398,7 +404,10 @@ class Tree:
                     lines = [line.lstrip() for line in lines]
                     indented_lines = [line + indentation + ' ' * 2 for line in lines]
 
-                    string += indentation + tag + indentation + ' ' * 2 + ''.join(indented_lines)[:-2] + '</' + tag_name + '>'
+                    string += indentation + tag + indentation + ' ' * 2 + ''.join(indented_lines)[
+                                                                          :-2] + '</' + tag_name + '>'
+                elif tag_name == 'input':
+                    raise SelfClosingElement('input is a self closing element: <input/> but contains nested content.')
                 else:
                     fst_line = lines.pop(0)
                     fst_line = block_text(fst_line)
@@ -434,6 +443,8 @@ class Tree:
 
                 if tag_name == 'html':
                     string += indentation + tag + '\n' + indentation + '</' + tag_name + '>'
+                elif tag_name == 'input':
+                    string += tag[:-1] + ' />'
                 else:
 
                     if tag_name == 'body':
