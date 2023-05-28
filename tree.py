@@ -1,5 +1,6 @@
 import js2py
 import re
+from DuplicateAttribute import DuplicateAttribute
 
 context = js2py.EvalJs({})
 
@@ -42,8 +43,17 @@ class Tree:
             if subtree.type == 'CLASS':
                 classes.append(subtree.value)
             else:
-                at = re.sub(r'\s*(=|\:|\?|\+|-|\*|\/|,|\(|\)|\%|\<|\>|\&|\^|\||\!)', r'\1', subtree.value)
+
+                at = re.sub(r'\s*(=|\:|\?|\+|-|\*|\/|,|\(|\)|\%|\<|\>|\&|\^|\||\!|\'|\{)', r'\1', subtree.value)
+                style = re.findall(r'\w+=\{[^}]+}', at)
+                if style:
+                    at = re.sub(r'\w+=\{[^}]+}', '', at)
+
                 at = re.split(r',?\s+', at)
+                if at[0] == '':
+                    at.pop(0)
+
+                at += style
 
                 for attribute in at:
                     attribute = re.split('=', attribute)
@@ -57,17 +67,29 @@ class Tree:
                             except:
                                 attributes[attribute[0]] = ""
                         else:
-                            raise ValueError(f'Duplicated attribute "{attribute[0]}" in not allowed')
+                            raise DuplicateAttribute(f'Duplicated attribute "{attribute[0]}" in not allowed')
                     else:
                         if attribute[0] == 'class':
                             classes.append(context.eval(attribute[1]))
                         elif attribute[0] not in attributes:
-                            try:
-                                attributes[attribute[0]] = context.eval(attribute[1])
-                            except:
-                                attributes[attribute[0]] = ""
+                            if attribute[0] == 'style':
+                                if attribute[1][0] == '{' and attribute[-1][-1] == '}':
+                                    res = attribute[1][1:-1]
+                                    res = re.sub(r'\s*,\s*', ';', res)
+                                    res = re.sub(r'\'', '', res)
+                                    attributes[attribute[0]] = res + ';'
+                                else:
+                                    try:
+                                        attributes[attribute[0]] = context.eval(attribute[1])
+                                    except:
+                                        attributes[attribute[0]] = ""
+                            else:
+                                try:
+                                    attributes[attribute[0]] = context.eval(attribute[1])
+                                except:
+                                    attributes[attribute[0]] = ""
                         else:
-                            raise ValueError(f'Duplicated attribute "{attribute[0]}" in not allowed')
+                            raise DuplicateAttribute(f'Duplicated attribute "{attribute[0]}" in not allowed')
 
         return classes, attributes
 
@@ -79,13 +101,12 @@ class Tree:
                 id = self.trees[1].value
                 classes2, attributes2 = self.trees[2].to_html_attribute_list()
                 classes = classes1 + classes2
-                attributes = attributes1.copy()
-                attributes1.update(attributes2)
 
-                for chave, valor in attributes1.items():
-                    if valor != attributes1.get(chave):
-                        # erro
-                        pass
+                for chave, valor in attributes2.items():
+                    if chave in attributes1:
+                        raise DuplicateAttribute(f'Duplicate attribute "{chave}" is not allowed.')
+                    else:
+                        attributes1[chave] = valor
 
                 return classes, id, attributes1
 

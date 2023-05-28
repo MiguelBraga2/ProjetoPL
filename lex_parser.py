@@ -496,7 +496,7 @@ def t_taginterpolation_lparen(t):
 
 
 def t_taginterpolation_TEXT(t):
-    r'(?<!\[).+?(?=\#(\{|\[))|(?<!\[).+?(?=\])'
+    r'(?<!\[).+?(?=\])|(?<!\[).+?(?=\#(\{|\[))'
     t.lexer.newline = False
     if t.value.isspace():
         return
