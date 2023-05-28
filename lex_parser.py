@@ -2,6 +2,7 @@ import ply.lex as lex
 import sys
 
 from IndentationException import IndentationException
+from UnexpectedToken import UnexpectedToken
 
 # Reserved words 
 reserved = {
@@ -408,9 +409,10 @@ def t_DOCTYPE(t):
     r'(?<=(\s|\[))doctype.*'
     return t
 
+
 # Define a rule for the TAG token
 def t_TAG(t):
-    r'(?<=(\s|\[))[a-z][a-z0-9]*'
+    r'(?<=\s)[A-Za-z]\w*'
     t.type = reserved.get(t.value, 'TAG')
     t.lexer.newline = False
 
@@ -486,14 +488,51 @@ def t_taginterpolation_BEGININTERP(t):
     return t
 
 
+def t_taginterpolation_ID(t):
+    r'(?<!(\]|\}))\#[\w\-_]+'
+    if t.lexer.newline:
+        t.lexer.skip(-len(t.value))
+        t.type = 'TAG'
+        t.value = 'div'
+        t.lexer.newline = False
+        return t
+
+    t.value = t.value[1:]
+    return t
+
+
+# Define a rule for the CLASS token
+def t_taginterpolation_CLASS(t):
+    r'(?<!(\]|\}))\.[\w\-_]+'
+    if t.lexer.newline:
+        t.lexer.skip(-len(t.value))
+        t.type = 'TAG'
+        t.value = 'div'
+        t.lexer.newline = False
+        return t
+
+    t.value = t.value[1:]
+    return t
+
 def t_taginterpolation_lparen(t):
-    r'\('
+    r'(?<!(\]|\}))\('
     t.lexer.newline = False
     t.lexer.push_state('attributes')
 
+def t_taginterpolation_TAG(t):
+    r'(?<=\[)[A-Za-z]\w*'
+    t.type = reserved.get(t.value, 'TAG')
+    t.lexer.newline = False
+
+    match t.type:
+        case 'UNLESS' | 'WHILE' | 'CASE' | 'WHEN' | 'IF' | 'ELSE' | 'EACH' | 'DEFAULT':
+            raise UnexpectedToken('Syntax Error: Unexpected token')
+        case _:
+            pass
+    return t
 
 def t_taginterpolation_TEXT(t):
-    r'(?<!\[).+?(?=\])|(?<!\[).+?(?=\#(\{|\[))'
+    r'.+?((?=\#(\{|\[))|(?=\]))'
     t.lexer.newline = False
     if t.value.isspace():
         return
