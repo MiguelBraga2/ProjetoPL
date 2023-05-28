@@ -85,9 +85,7 @@ attribute : CLASS
 content : EQUALS JSCODE
         | text
 
-interpolation : VARIABLE
-              | STRING 
-              | NUMBER
+interpolation : JSCODE
 
 block_text : block_text BEGININTERP interp ENDINTERP
            | blocK_text TEXT

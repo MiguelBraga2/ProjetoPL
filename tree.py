@@ -548,20 +548,11 @@ class Tree:
                 string += aux
 
             case 'interpolation1':
-                # interpolation : STRING
-                string += self.trees[0].value
-
-            case 'interpolation2':
-                # interpolation : IDENTIFIER
+                # interpolation : JSCODE
                 try:
-                    result = str(context.eval(self.trees[0].value))
+                    string += str(context.eval(self.trees[0].value))
                 except:
-                    result = ''
-                string += result
-
-            case 'interpolation3':
-                # # interpolation : NUMBER
-                string += str(self.trees[0].value)
+                    pass
 
             case 'text':
                 for subtree in self.trees:

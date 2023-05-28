@@ -321,6 +321,10 @@ def t_BEGININTERP(t):
         t.lexer.newline = True # In this case we want this set to True, because we can start a new tag from here
     return t
 
+def t_interpolation_JSCODE(t):
+    r'[^\}]+'
+    t.lexer.newline = False
+    return t
 
 # In an interpolation state, a string can be delimited by " or '
 def t_interpolation_STRING(t):

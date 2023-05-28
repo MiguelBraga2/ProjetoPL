@@ -1,0 +1,6 @@
+- var num = 3
+p #{num*2+5}
+- var str = "ola"
+p #{str.toUpperCase() + str}
+- var str2 = "ole"
+p #{num==3 ? str : str2}

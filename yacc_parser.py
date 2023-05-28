@@ -291,16 +291,15 @@ def p_content(p):
 
 def p_interpolation(p):
     """
-    interpolation : STRING
-                  | IDENTIFIER
-                  | NUMBER
+    interpolation : JSCODE
     """
-    if p[1][0] == '"': # STRING
+    p[0] = Tree(type='interpolation1', trees=[Tree(type='JSCODE', value=p[1])])
+    """if p[1][0] == '"': # STRING
         p[0] = Tree(type='interpolation1', trees=[Tree(type='STRING', value=p[1][1:-1])])
     elif p[1][0] in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']: # NUMBER
         p[0] = Tree(type='interpolation3', trees=[Tree(type='NUMBER', value=p[1])])
     else: # IDENTIFIER
-        p[0] = Tree(type='interpolation2', trees=[Tree(type='IDENTIFIER', value=p[1])])
+        p[0] = Tree(type='interpolation2', trees=[Tree(type='IDENTIFIER', value=p[1])])"""
     
 def p_interp(p):
     """
